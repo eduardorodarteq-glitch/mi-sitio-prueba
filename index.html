@@ -4,23 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AI Code Sentinel — Prompt Factory</title>
-  <meta name="description" content="Micro-app interna: brief con opciones → prompt maestro automático (código, imágenes, video y workflows) + guía de integraciones paso a paso." />
+  <meta name="description" content="Micro-app interna: brief con opciones → prompt maestro automático para web, apps y backend." />
 
+  <!-- Open Graph (SEO básico para la micro-app en sí) -->
   <meta property="og:title" content="AI Code Sentinel — Prompt Factory" />
-  <meta property="og:description" content="Genera briefs y prompts maestros con módulos e integraciones activables + guía interna." />
+  <meta property="og:description" content="Genera briefs y prompts maestros con módulos e integraciones activables." />
   <meta property="og:type" content="website" />
 
   <style>
     :root{
       --bg:#070816;
       --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.10);
       --line:rgba(255,255,255,.14);
       --text:rgba(255,255,255,.90);
       --muted:rgba(255,255,255,.62);
-      --shadow: 0 18px 70px rgba(0,0,0,.45);
-      --r:18px;
+      --a:#7cf7ff;
+      --b:#b37cff;
       --ok:#2bff88;
       --bad:#ff4d6d;
+      --shadow: 0 18px 70px rgba(0,0,0,.45);
+      --r:18px;
     }
     *{box-sizing:border-box}
     body{
@@ -33,7 +37,7 @@
         linear-gradient(180deg, #050611, var(--bg) 40%, #050611);
       overflow-x:hidden;
     }
-    .container{max-width:1180px; margin:0 auto; padding:16px;}
+    .container{max-width:1150px; margin:0 auto; padding:16px;}
     .top{
       position:sticky; top:0; z-index:10;
       background: rgba(5,6,17,.55);
@@ -56,7 +60,7 @@
     }
     @keyframes spin{to{transform:rotate(360deg)}}
     h1{margin:0; font-size:14px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .sub{margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.35; max-width:80ch;}
+    .sub{margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.35; max-width:75ch;}
     .pill{
       border:1px solid rgba(255,255,255,.16);
       background: rgba(0,0,0,.25);
@@ -67,7 +71,6 @@
       display:flex; gap:10px; align-items:center; flex-wrap:wrap;
     }
     .pill b{color:rgba(255,255,255,.88)}
-    .dot{width:10px; height:10px; border-radius:50%; background: var(--ok); box-shadow:0 0 18px rgba(43,255,136,.25); display:inline-block;}
     .grid{display:grid; grid-template-columns: 1fr 1fr; gap:12px; align-items:start;}
     @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
 
@@ -155,12 +158,28 @@
       word-break:break-word;
     }
     .hint{color:var(--muted); font-size:12px; line-height:1.45;}
+    .tag{display:inline-flex; gap:8px; align-items:center; border:1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.22); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted);}
+    .dot{width:10px; height:10px; border-radius:50%; background: var(--ok); box-shadow:0 0 18px rgba(43,255,136,.25);}
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      z-index:99; opacity:0; transition: opacity .2s ease, transform .2s ease;
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      padding:10px 14px;
+      color: rgba(255,255,255,.9);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      font-size:12px;
+      pointer-events:none;
+    }
+    .toast.on{opacity:1; transform:translateX(-50%) translateY(-6px);}
     footer{padding:18px 0 70px; color:var(--muted); font-size:12px;}
     .footRow{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;}
     .footRow a{color: rgba(255,255,255,.78); text-decoration:none;}
     .footRow a:hover{text-decoration:underline;}
 
-    /* Modal */
+    /* Modal legal */
     .modalWrap{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
@@ -170,7 +189,7 @@
     }
     .modalWrap.on{display:flex; align-items:center; justify-content:center;}
     .modal{
-      width:min(980px, 100%);
+      width:min(920px, 100%);
       max-height: 88vh;
       overflow:auto;
       border-radius:18px;
@@ -187,64 +206,7 @@
     .modalHead b{letter-spacing:.02em;}
     .modalBody{padding:14px; color: rgba(255,255,255,.78); font-size:13px; line-height:1.65;}
     .modalBody h3{margin:14px 0 8px; color: rgba(255,255,255,.92);}
-    .modalBody h4{margin:10px 0 6px; color: rgba(255,255,255,.90);}
     .modalBody ul{margin:8px 0 0 18px;}
-    .modalBody ol{margin:8px 0 0 18px;}
-
-    /* Toast */
-    .toast{
-      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      z-index:99; opacity:0; transition: opacity .2s ease, transform .2s ease;
-      background: rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:999px;
-      padding:10px 14px;
-      color: rgba(255,255,255,.9);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      font-size:12px;
-      pointer-events:none;
-    }
-    .toast.on{opacity:1; transform:translateX(-50%) translateY(-6px);}
-
-    /* Floating helper bot button */
-    .fab{
-      position:fixed; right:16px; bottom:16px;
-      z-index:70;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.30);
-      color: rgba(255,255,255,.92);
-      padding:12px 14px;
-      border-radius:999px;
-      display:flex; gap:10px; align-items:center;
-      cursor:pointer;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      user-select:none;
-    }
-    .fab:hover{background: rgba(255,255,255,.10);}
-    .fab .miniDot{width:10px;height:10px;border-radius:50%;background:rgba(124,247,255,.9);box-shadow:0 0 18px rgba(124,247,255,.25);}
-
-    /* Music mini panel */
-    .musicBar{
-      margin-top:10px;
-      padding:10px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      border-radius:14px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .musicBar input[type="range"]{width:180px}
-    .badge{
-      display:inline-flex; gap:8px; align-items:center;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.22);
-      padding:6px 10px; border-radius:999px;
-      font-size:12px; color:var(--muted);
-    }
   </style>
 </head>
 
@@ -255,535 +217,319 @@
         <div class="logo" aria-hidden="true"></div>
         <div style="min-width:0">
           <h1>AI Code Sentinel — Prompt Factory</h1>
-          <p class="sub">Personal: genera BRIEF + PROMPT MAESTRO para <b>código</b>, <b>imágenes</b>, <b>video</b> y <b>workflows</b>. Incluye <b>Guía de Integraciones</b> interna paso a paso.</p>
+          <p class="sub">Para ti: genera BRIEF + PROMPT MAESTRO para web, apps, backend y full-stack. Incluye módulos activables + SEO + legal.</p>
         </div>
       </div>
       <div class="pill">
-        <span class="dot"></span>
-        <span>v1.5</span>
+        <span>v1.3</span>
         <span>·</span>
         <span><b>personal</b></span>
         <span>·</span>
-        <span>guía ✅</span>
+        <span>presets ✅</span>
       </div>
     </div>
   </div>
 
   <div class="container">
     <div class="grid">
-
       <!-- LEFT: FORM -->
       <div class="card">
         <div class="head">
           <div>
-            <b>Brief con opciones</b>
-            <small>Elige <b>Factory</b> y llena lo mínimo. Luego: Generar → Copiar → Pegar en tu IA.</small>
+            <b>Brief con opciones (unificado)</b>
+            <small>Elige “Producto” primero: Web / App / Backend / Full-stack. Luego genera el prompt.</small>
           </div>
-          <span class="badge">Sin backend · Todo local</span>
+          <span class="tag"><span class="dot"></span>Sin backend</span>
         </div>
 
         <div class="body">
+          <div class="row">
+            <div>
+              <label>Producto (tipo de solución)</label>
+              <select id="productType">
+                <option value="Web (página/sitio)">A) Web (página/sitio)</option>
+                <option value="Web App (panel/sistema)">B) Web App (panel/sistema)</option>
+                <option value="App móvil (iOS/Android)">C) App móvil (iOS/Android)</option>
+                <option value="Backend / API">D) Backend / API</option>
+                <option value="Full-stack (frontend + backend)">E) Full-stack (frontend + backend)</option>
+                <option value="Herramienta interna (micro-app/script)">F) Herramienta interna (micro-app/script)</option>
+              </select>
+            </div>
+            <div>
+              <label>IA / plataforma destino (para pegar el prompt)</label>
+              <select id="aiTarget">
+                <option value="ChatGPT (general)">A) ChatGPT (general)</option>
+                <option value="Claude (estructura + calidad)">B) Claude</option>
+                <option value="Gemini (Google)">C) Gemini</option>
+                <option value="Copilot (dev)">D) Copilot</option>
+                <option value="Cualquier IA (agnóstico)">E) Cualquier IA (agnóstico)</option>
+              </select>
+            </div>
+          </div>
 
           <div class="row">
             <div>
-              <label>Factory (tipo de prompt)</label>
-              <select id="factoryType">
-                <option value="CODE">A) Código (web/apps/backend)</option>
-                <option value="IMAGE">B) Imágenes (prompts visuales)</option>
-                <option value="VIDEO">C) Video (guion + storyboard + prompts)</option>
-                <option value="WORKFLOW">D) Workflows (automatizaciones)</option>
+              <label>Tipo de proyecto (web)</label>
+              <select id="projectType">
+                <option value="Landing page">A) Landing page (1 página, conversión)</option>
+                <option value="Sitio web">B) Sitio web (3–8 páginas)</option>
+                <option value="E-commerce">C) E-commerce (tienda)</option>
+                <option value="Página informativa">D) Página informativa</option>
+                <option value="Portfolio / Agencia">E) Portfolio / Agencia</option>
+                <option value="Funnel / Página de ventas">F) Funnel / Página de ventas</option>
+                <option value="Evento / Registro">G) Evento / Registro</option>
+                <option value="Catálogo / Directorio">H) Catálogo / Directorio</option>
               </select>
             </div>
             <div>
-              <label>IA / plataforma destino</label>
-              <select id="aiTarget">
-                <option value="Cualquier IA (agnóstico)">A) Cualquier IA (agnóstico)</option>
-                <option value="ChatGPT">B) ChatGPT</option>
-                <option value="Claude">C) Claude</option>
-                <option value="Gemini">D) Gemini</option>
-                <option value="Copilot / IDE">E) Copilot / IDE</option>
+              <label>Nicho / negocio</label>
+              <select id="niche">
+                <option value="Bufete de abogados">A) Abogados / legal</option>
+                <option value="Restaurante">B) Restaurante</option>
+                <option value="Agencia">C) Agencia</option>
+                <option value="Salud">D) Salud</option>
+                <option value="Educación">E) Educación</option>
+                <option value="Tienda de productos">F) Tienda</option>
+                <option value="Inmobiliaria">G) Inmobiliaria</option>
+                <option value="Finanzas">H) Finanzas</option>
+                <option value="Tecnología / IA">I) Tecnología / IA</option>
               </select>
             </div>
           </div>
 
-          <!-- ====== CODE SECTION ====== -->
-          <div id="sectionCode">
-
-            <div class="row">
-              <div>
-                <label>Producto (tipo de solución)</label>
-                <select id="productType">
-                  <option value="Web (página/sitio)">A) Web (página/sitio)</option>
-                  <option value="Web App (panel/sistema)">B) Web App (panel/sistema)</option>
-                  <option value="App móvil (iOS/Android)">C) App móvil (iOS/Android)</option>
-                  <option value="Backend / API">D) Backend / API</option>
-                  <option value="Full-stack (frontend + backend)">E) Full-stack (frontend + backend)</option>
-                  <option value="Herramienta interna (micro-app/script)">F) Herramienta interna (micro-app/script)</option>
-                </select>
-              </div>
-              <div>
-                <label>Tipo de proyecto (web)</label>
-                <select id="projectType">
-                  <option value="Landing page">A) Landing page</option>
-                  <option value="Sitio web">B) Sitio web</option>
-                  <option value="E-commerce">C) E-commerce</option>
-                  <option value="Página informativa">D) Página informativa</option>
-                  <option value="Portfolio / Agencia">E) Portfolio / Agencia</option>
-                  <option value="Funnel / Página de ventas">F) Funnel / Página de ventas</option>
-                  <option value="Evento / Registro">G) Evento / Registro</option>
-                  <option value="Catálogo / Directorio">H) Catálogo / Directorio</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Nicho / negocio</label>
-                <select id="niche">
-                  <option value="Bufete de abogados">A) Abogados / legal</option>
-                  <option value="Restaurante">B) Restaurante</option>
-                  <option value="Agencia">C) Agencia</option>
-                  <option value="Salud">D) Salud</option>
-                  <option value="Educación">E) Educación</option>
-                  <option value="Tienda de productos">F) Tienda</option>
-                  <option value="Inmobiliaria">G) Inmobiliaria</option>
-                  <option value="Finanzas">H) Finanzas</option>
-                  <option value="Tecnología / IA">I) Tecnología / IA</option>
-                </select>
-              </div>
-              <div>
-                <label>Objetivo principal</label>
-                <select id="goal">
-                  <option value="Captar leads">A) Captar leads</option>
-                  <option value="WhatsApp como canal principal">B) WhatsApp como canal principal</option>
-                  <option value="Agendar citas">C) Agendar citas</option>
-                  <option value="Vender">D) Vender</option>
-                  <option value="Branding / confianza">E) Branding / confianza</option>
-                  <option value="Soporte / tickets">F) Soporte / tickets</option>
-                  <option value="Registro / onboarding">G) Registro / onboarding</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Nivel</label>
-                <select id="level">
-                  <option value="Demo">A) Demo</option>
-                  <option value="MVP">B) MVP</option>
-                  <option value="Producción">C) Producción</option>
-                  <option value="Portafolio">D) Portafolio</option>
-                </select>
-              </div>
-              <div>
-                <label>Tono del contenido</label>
-                <select id="tone">
-                  <option value="Profesional y directo">A) Profesional y directo</option>
-                  <option value="Persuasivo vendedor">B) Persuasivo vendedor</option>
-                  <option value="Cercano humano">C) Cercano humano</option>
-                  <option value="Minimal y elegante">D) Minimal y elegante</option>
-                  <option value="Técnico experto">E) Técnico experto</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Nombre de marca</label>
-                <input id="brandName" placeholder="Ej: García y Asociados" />
-              </div>
-              <div>
-                <label>Ciudad (opcional)</label>
-                <input id="city" placeholder="Ej: Ciudad Juárez" />
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>WhatsApp (formato internacional)</label>
-                <input id="whatsapp" placeholder="Ej: 5216561234567" />
-              </div>
-              <div>
-                <label>Servicios / features (coma)</label>
-                <input id="services" placeholder="Ej: Civil, Mercantil, Laboral / Login, Pagos, Agenda" />
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Estilo visual</label>
-                <select id="style">
-                  <option value="Corporate premium">A) Corporate premium</option>
-                  <option value="Tech futurista">B) Tech futurista</option>
-                  <option value="Minimalista limpio">C) Minimalista</option>
-                  <option value="Dark moderno">D) Dark moderno</option>
-                  <option value="Creativo atrevido">E) Creativo atrevido</option>
-                  <option value="Elegante editorial">F) Elegante editorial</option>
-                </select>
-              </div>
-              <div>
-                <label>Colores</label>
-                <select id="colors">
-                  <option value="Elige tú según el estilo">A) Elige tú</option>
-                  <option value="Negro + blanco + dorado">B) Negro + blanco + dorado</option>
-                  <option value="Azul marino + blanco + dorado">C) Azul marino + blanco + dorado</option>
-                  <option value="Negro + neón (cian/morado)">D) Negro + neón (cian/morado)</option>
-                  <option value="Blanco + gris + acento">E) Blanco + gris + acento</option>
-                  <option value="Paleta exacta (yo la pondré)">F) Paleta exacta</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Estilo de imágenes</label>
-                <select id="imgStyle">
-                  <option value="Elige tú según el estilo">A) Elige tú</option>
-                  <option value="Fotografía realista">B) Fotografía realista</option>
-                  <option value="Ilustración premium">C) Ilustración premium</option>
-                  <option value="3D minimal">D) 3D minimal</option>
-                  <option value="Iconos + SVG local">E) Iconos + SVG local</option>
-                </select>
-              </div>
-              <div>
-                <label>Nivel de animación</label>
-                <select id="animLevel">
-                  <option value="Sutil (reveal/hover)">A) Sutil</option>
-                  <option value="Moderada (parallax ligero)">B) Moderada</option>
-                  <option value="Llamativa (hero animado)">C) Llamativa</option>
-                  <option value="3D (si aplica)">D) 3D (si aplica)</option>
-                  <option value="Sin animaciones">E) Sin animaciones</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>SEO</label>
-                <select id="seoLevel">
-                  <option value="SEO básico (title, description, OG, headings, alt)">A) SEO básico</option>
-                  <option value="SEO + Open Graph + Schema (JSON-LD)">B) SEO + Schema</option>
-                  <option value="SEO completo + sitemap/robots (si aplica)">C) SEO + sitemap/robots</option>
-                </select>
-              </div>
-              <div>
-                <label>Legal (footer)</label>
-                <select id="legalPack">
-                  <option value="Privacidad + Términos + Cookies">A) Privacidad + Términos + Cookies</option>
-                  <option value="Privacidad + Términos">B) Privacidad + Términos</option>
-                  <option value="Solo Privacidad">C) Solo Privacidad</option>
-                </select>
-              </div>
-            </div>
-
-            <div style="height:12px"></div>
-
-            <label>Módulos (para el código generado por la IA)</label>
-            <div class="checks">
-              <label class="ck"><input type="checkbox" id="m_whatsapp" checked />
-                <div><b>WhatsApp flotante</b><small>Solo cambias el teléfono.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_form" checked />
-                <div><b>Formulario validado</b><small>Sin backend; listo para EmailJS.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_booking" />
-                <div><b>Agenda (demo local)</b><small>Guarda citas en el navegador.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_auth" />
-                <div><b>Login/Auth</b><small>Base para app/webapp.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_admin" />
-                <div><b>Panel admin</b><small>CRUD simple para datos.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_music_site" />
-                <div><b>Música en la web/app</b><small>Toggle + volumen.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_bot_site" />
-                <div><b>Bot guía dentro del sitio</b><small>FAQ/guía + hook chat.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="m_legal" checked />
-                <div><b>Legal</b><small>Privacidad/Términos/Cookies.</small></div>
-              </label>
-            </div>
-
-            <div style="height:12px"></div>
-
-            <label>Integraciones (listas para activar)</label>
-            <div class="checks">
-              <label class="ck"><input type="checkbox" id="i_emailjs" />
-                <div><b>Email (EmailJS)</b><small>Form → correo sin backend.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="i_stripe" />
-                <div><b>Pagos (Stripe)</b><small>Payment Link/checkout.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="i_ga4" />
-                <div><b>Analytics (GA4)</b><small>Eventos + conversiones.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="i_supabase" />
-                <div><b>BD (Supabase)</b><small>Usuarios/datos.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="i_firebase" />
-                <div><b>Firebase</b><small>Auth/DB rápido.</small></div>
-              </label>
-              <label class="ck"><input type="checkbox" id="i_recaptcha" />
-                <div><b>reCAPTCHA</b><small>Anti-spam.</small></div>
-              </label>
-            </div>
-
-            <div style="height:12px"></div>
-
-            <div class="row">
-              <div>
-                <label>Stack (si App/WebApp)</label>
-                <select id="appStack">
-                  <option value="Elige tú (recomendado)">A) Elige tú</option>
-                  <option value="React + Vite (webapp)">B) React + Vite</option>
-                  <option value="Next.js (webapp + SEO)">C) Next.js</option>
-                  <option value="Flutter (móvil)">D) Flutter</option>
-                  <option value="React Native (móvil)">E) React Native</option>
-                </select>
-              </div>
-              <div>
-                <label>Backend (si aplica)</label>
-                <select id="backendStack">
-                  <option value="Elige tú (recomendado)">A) Elige tú</option>
-                  <option value="Node.js (Express)">B) Node.js (Express)</option>
-                  <option value="Node.js (NestJS)">C) Node.js (NestJS)</option>
-                  <option value="Python (FastAPI)">D) Python (FastAPI)</option>
-                  <option value="Firebase">E) Firebase</option>
-                  <option value="Supabase">F) Supabase</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Autenticación</label>
-                <select id="authMode">
-                  <option value="Sin login (demo)">A) Sin login (demo)</option>
-                  <option value="Email/Password">B) Email/Password</option>
-                  <option value="OAuth Google">C) OAuth Google</option>
-                  <option value="Magic Link">D) Magic Link</option>
-                </select>
-              </div>
-              <div>
-                <label>Modelo de datos (si backend/DB)</label>
-                <input id="dataModel" placeholder="Ej: usuarios, citas, pagos, casos, productos" />
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ====== IMAGE SECTION ====== -->
-          <div id="sectionImage" style="display:none;">
-            <div class="row">
-              <div>
-                <label>Tipo de imagen</label>
-                <select id="imgType">
-                  <option value="Logo / marca">A) Logo / marca</option>
-                  <option value="Hero banner para web">B) Hero banner (web)</option>
-                  <option value="Mockup / producto">C) Mockup / producto</option>
-                  <option value="Post para redes">D) Post para redes</option>
-                  <option value="Iconos / UI">E) Iconos / UI</option>
-                </select>
-              </div>
-              <div>
-                <label>Formato</label>
-                <select id="imgFormat">
-                  <option value="1:1">A) 1:1</option>
-                  <option value="16:9">B) 16:9</option>
-                  <option value="9:16">C) 9:16</option>
-                  <option value="4:5">D) 4:5</option>
-                  <option value="3:2">E) 3:2</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Estética</label>
-                <select id="imgAesthetic">
-                  <option value="Elige tú según el nicho">A) Elige tú</option>
-                  <option value="Premium minimal">B) Premium minimal</option>
-                  <option value="Cyber / neón">C) Cyber / neón</option>
-                  <option value="Editorial elegante">D) Editorial elegante</option>
-                  <option value="3D suave">E) 3D suave</option>
-                </select>
-              </div>
-              <div>
-                <label>Calidad</label>
-                <select id="imgQuality">
-                  <option value="Alta">A) Alta</option>
-                  <option value="Ultra (detalles finos)">B) Ultra</option>
-                  <option value="Rápida (borrador)">C) Rápida</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Marca / tema</label>
-                <input id="imgBrand" placeholder="Ej: AI Code Sentinel / García y Asociados" />
-              </div>
-              <div>
-                <label>Paleta</label>
-                <input id="imgPalette" placeholder="Ej: negro, blanco, dorado / cian, morado, negro" />
-              </div>
-            </div>
-
+          <div class="row">
             <div>
-              <label>Contenido (qué debe verse)</label>
-              <textarea id="imgContent" placeholder="Ej: símbolo abstracto de IA + escudo legal, limpio, sin texto..."></textarea>
+              <label>Objetivo principal</label>
+              <select id="goal">
+                <option value="Captar leads">A) Captar leads</option>
+                <option value="WhatsApp como canal principal">B) WhatsApp como canal principal</option>
+                <option value="Agendar citas">C) Agendar citas</option>
+                <option value="Vender">D) Vender</option>
+                <option value="Branding / confianza">E) Branding / confianza</option>
+                <option value="Soporte / tickets">F) Soporte / tickets</option>
+                <option value="Registro / onboarding">G) Registro / onboarding</option>
+              </select>
             </div>
-
             <div>
-              <label>Negativos (qué NO quieres)</label>
-              <textarea id="imgNeg" placeholder="Ej: sin marcas de agua, sin manos deformes, sin texto ilegible..."></textarea>
+              <label>Nivel</label>
+              <select id="level">
+                <option value="Demo">A) Demo (mostrar rápido)</option>
+                <option value="MVP">B) MVP (funcional)</option>
+                <option value="Producción">C) Producción (cliente real)</option>
+                <option value="Portafolio">D) Portafolio (caso de estudio)</option>
+              </select>
             </div>
           </div>
 
-          <!-- ====== VIDEO SECTION ====== -->
-          <div id="sectionVideo" style="display:none;">
-            <div class="row">
-              <div>
-                <label>Tipo de video</label>
-                <select id="vidType">
-                  <option value="Anuncio corto (TikTok/Reels)">A) Anuncio corto (TikTok/Reels)</option>
-                  <option value="Video educativo">B) Educativo</option>
-                  <option value="Landing video hero">C) Video hero (web)</option>
-                  <option value="Testimonial / caso">D) Testimonial / caso</option>
-                </select>
-              </div>
-              <div>
-                <label>Duración</label>
-                <select id="vidDuration">
-                  <option value="15-25s">A) 15–25s</option>
-                  <option value="30-45s">B) 30–45s</option>
-                  <option value="60-90s">C) 60–90s</option>
-                  <option value="2-3min">D) 2–3min</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Tono</label>
-                <select id="vidTone">
-                  <option value="Directo y potente">A) Directo y potente</option>
-                  <option value="Premium elegante">B) Premium elegante</option>
-                  <option value="Educativo claro">C) Educativo claro</option>
-                  <option value="Emocional">D) Emocional</option>
-                </select>
-              </div>
-              <div>
-                <label>Formato</label>
-                <select id="vidFormat">
-                  <option value="9:16 vertical">A) 9:16 vertical</option>
-                  <option value="16:9 horizontal">B) 16:9 horizontal</option>
-                  <option value="1:1 cuadrado">C) 1:1</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Marca / tema</label>
-                <input id="vidBrand" placeholder="Ej: AI Code Sentinel / García y Asociados" />
-              </div>
-              <div>
-                <label>CTA</label>
-                <input id="vidCta" placeholder="Ej: Escribe WhatsApp / Agenda cita / Descarga guía" />
-              </div>
-            </div>
-
+          <div class="row">
             <div>
-              <label>Mensaje principal</label>
-              <textarea id="vidMessage" placeholder="Ej: bufete premium, confianza, agenda hoy..."></textarea>
+              <label>Estilo visual</label>
+              <select id="style">
+                <option value="Corporate premium">A) Corporate premium</option>
+                <option value="Tech futurista">B) Tech futurista</option>
+                <option value="Minimalista limpio">C) Minimalista</option>
+                <option value="Dark moderno">D) Dark moderno</option>
+                <option value="Creativo atrevido">E) Creativo atrevido</option>
+                <option value="Elegante editorial">F) Elegante editorial</option>
+              </select>
             </div>
-
-            <div class="row">
-              <div>
-                <label>Herramienta objetivo</label>
-                <select id="vidTool">
-                  <option value="Agnóstico (cualquier editor)">A) Agnóstico</option>
-                  <option value="CapCut">B) CapCut</option>
-                  <option value="Runway">C) Runway</option>
-                  <option value="Pika">D) Pika</option>
-                  <option value="Veed / Invideo">E) Veed / Invideo</option>
-                </select>
-              </div>
-              <div>
-                <label>Voz</label>
-                <select id="vidVoice">
-                  <option value="Texto en pantalla sin voz">A) Sin voz</option>
-                  <option value="Voz masculina seria">B) Voz masculina seria</option>
-                  <option value="Voz femenina elegante">C) Voz femenina elegante</option>
-                  <option value="Narración neutral">D) Narración neutral</option>
-                </select>
-              </div>
+            <div>
+              <label>Colores</label>
+              <select id="colors">
+                <option value="Elige tú según el estilo">A) Elige tú</option>
+                <option value="Negro + blanco + dorado">B) Negro + blanco + dorado</option>
+                <option value="Azul marino + blanco + dorado">C) Azul marino + blanco + dorado</option>
+                <option value="Negro + neón (cian/morado)">D) Negro + neón (cian/morado)</option>
+                <option value="Blanco + gris + acento">E) Blanco + gris + acento</option>
+                <option value="Paleta exacta (yo la pondré)">F) Paleta exacta (yo la pondré)</option>
+              </select>
             </div>
           </div>
 
-          <!-- ====== WORKFLOW SECTION ====== -->
-          <div id="sectionWorkflow" style="display:none;">
-            <div class="row">
-              <div>
-                <label>Plataforma de automatización</label>
-                <select id="wfTool">
-                  <option value="Agnóstico (dame opciones)">A) Agnóstico</option>
-                  <option value="n8n (self-host o cloud)">B) n8n</option>
-                  <option value="Make (Integromat)">C) Make</option>
-                  <option value="Zapier">D) Zapier</option>
-                  <option value="ManyChat + WhatsApp">E) ManyChat + WhatsApp</option>
-                </select>
-              </div>
-              <div>
-                <label>Objetivo del flujo</label>
-                <select id="wfGoal">
-                  <option value="Leads a WhatsApp + CRM">A) Leads → WhatsApp + CRM</option>
-                  <option value="Agenda de citas + recordatorios">B) Agenda + recordatorios</option>
-                  <option value="Cobros + confirmación">C) Cobros + confirmación</option>
-                  <option value="Soporte / tickets">D) Soporte / tickets</option>
-                  <option value="Contenido (post automático)">E) Contenido automático</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Trigger (qué lo dispara)</label>
-                <input id="wfTrigger" placeholder="Ej: formulario web, mensaje WhatsApp, nuevo lead Meta..." />
-              </div>
-              <div>
-                <label>Destino principal</label>
-                <input id="wfTarget" placeholder="Ej: Google Sheets, CRM, Email, Calendar..." />
-              </div>
-            </div>
-
-            <div class="row">
-              <div>
-                <label>Datos a capturar</label>
-                <input id="wfData" placeholder="Ej: nombre, teléfono, servicio, fecha, origen..." />
-              </div>
-              <div>
-                <label>Reglas</label>
-                <input id="wfRules" placeholder="Ej: si servicio=legal → tag 'legal'..." />
-              </div>
-            </div>
-
+          <div class="row">
             <div>
-              <label>Notas (opcional)</label>
-              <textarea id="wfNotes" placeholder="Ej: mensaje confirmación, recordatorio 24h y 2h, reporte diario..."></textarea>
+              <label>Nombre de marca</label>
+              <input id="brandName" placeholder="Ej: García y Asociados" />
+            </div>
+            <div>
+              <label>Ciudad (opcional)</label>
+              <input id="city" placeholder="Ej: Ciudad Juárez" />
             </div>
           </div>
 
-          <!-- ====== Extras micro-app ====== -->
-          <div class="musicBar">
-            <span class="badge">Extras micro-app</span>
-            <button class="btn" id="btnMusic">Música: OFF</button>
-            <label style="margin:0; color:var(--muted); font-size:12px;">Vol</label>
-            <input id="musicVol" type="range" min="0" max="100" value="18" />
-            <button class="btn" id="btnHelp">Bot: explicar página</button>
+          <div class="row">
+            <div>
+              <label>WhatsApp (formato internacional)</label>
+              <input id="whatsapp" placeholder="Ej: 5216561234567" />
+            </div>
+            <div>
+              <label>Tono del contenido</label>
+              <select id="tone">
+                <option value="Profesional y directo">A) Profesional y directo</option>
+                <option value="Persuasivo vendedor">B) Persuasivo vendedor</option>
+                <option value="Cercano humano">C) Cercano humano</option>
+                <option value="Minimal y elegante">D) Minimal y elegante</option>
+                <option value="Técnico experto">E) Técnico experto</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label>Servicios / features (separados por coma)</label>
+            <input id="services" placeholder="Ej: Civil, Mercantil, Laboral / o: Login, Pagos, Agenda" />
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="row">
+            <div>
+              <label>Estilo de imágenes</label>
+              <select id="imgStyle">
+                <option value="Elige tú según el estilo">A) Elige tú</option>
+                <option value="Fotografía realista">B) Fotografía realista</option>
+                <option value="Ilustración premium">C) Ilustración premium</option>
+                <option value="3D minimal">D) 3D minimal</option>
+                <option value="Iconos + SVG local">E) Iconos + SVG local</option>
+              </select>
+            </div>
+            <div>
+              <label>Nivel de animación</label>
+              <select id="animLevel">
+                <option value="Sutil (reveal/hover)">A) Sutil (reveal/hover)</option>
+                <option value="Moderada (parallax ligero)">B) Moderada (parallax ligero)</option>
+                <option value="Llamativa (hero animado)">C) Llamativa (hero)</option>
+                <option value="3D (si aplica)">D) 3D (si aplica)</option>
+                <option value="Sin animaciones">E) Sin animaciones</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>SEO (por default recomendado)</label>
+              <select id="seoLevel">
+                <option value="SEO básico (title, description, OG, headings, alt)">A) SEO básico</option>
+                <option value="SEO + Open Graph + Schema (JSON-LD)">B) SEO + Schema</option>
+                <option value="SEO completo + sitemap/robots (si aplica)">C) SEO + sitemap/robots</option>
+              </select>
+            </div>
+            <div>
+              <label>Legal (footer)</label>
+              <select id="legalPack">
+                <option value="Privacidad + Términos + Cookies">A) Privacidad + Términos + Cookies</option>
+                <option value="Privacidad + Términos">B) Privacidad + Términos</option>
+                <option value="Solo Privacidad">C) Solo Privacidad</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <label>Módulos (para el código generado por la IA)</label>
+          <div class="checks">
+            <label class="ck"><input type="checkbox" id="m_whatsapp" checked />
+              <div><b>WhatsApp flotante</b><small>Solo cambias el teléfono.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_form" checked />
+              <div><b>Formulario validado</b><small>Sin backend; listo para EmailJS.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_booking" />
+              <div><b>Agenda (demo local)</b><small>Guarda citas en el navegador.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_auth" />
+              <div><b>Login/Auth</b><small>Base para app/webapp.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_anim" checked />
+              <div><b>Animaciones</b><small>Scroll reveal ligero.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_music" />
+              <div><b>Música ambiental</b><small>Web Audio (sin archivos).</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_legal" checked />
+              <div><b>Legal básico</b><small>Privacidad/Términos/Cookies.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="m_admin" />
+              <div><b>Panel admin</b><small>CRUD simple para datos.</small></div>
+            </label>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <label>Integraciones (listas para activar)</label>
+          <div class="checks">
+            <label class="ck"><input type="checkbox" id="i_emailjs" />
+              <div><b>Email (EmailJS)</b><small>Form → correo sin backend.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_stripe" />
+              <div><b>Pagos (Stripe)</b><small>Checkout/anticipo.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_paypal" />
+              <div><b>Pagos (PayPal)</b><small>Botón/checkout.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_gcal" />
+              <div><b>Google Calendar</b><small>Citas reales.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_supabase" />
+              <div><b>BD (Supabase)</b><small>Usuarios/datos.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_firebase" />
+              <div><b>Firebase</b><small>Auth/DB rápido.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_ga4" />
+              <div><b>Analytics (GA4)</b><small>Eventos + conversiones.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_maps" />
+              <div><b>Maps</b><small>Google Maps/Mapbox.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_recaptcha" />
+              <div><b>reCAPTCHA</b><small>Anti-spam.</small></div>
+            </label>
+            <label class="ck"><input type="checkbox" id="i_onesignal" />
+              <div><b>Notificaciones</b><small>OneSignal.</small></div>
+            </label>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <!-- App/Backend specifics (mínimo) -->
+          <div class="row">
+            <div>
+              <label>Stack preferido (si es App/WebApp)</label>
+              <select id="appStack">
+                <option value="Elige tú (recomendado)">A) Elige tú (recomendado)</option>
+                <option value="React + Vite (webapp)">B) React + Vite (webapp)</option>
+                <option value="Next.js (webapp + SEO)">C) Next.js</option>
+                <option value="Flutter (móvil)">D) Flutter</option>
+                <option value="React Native (móvil)">E) React Native</option>
+              </select>
+            </div>
+            <div>
+              <label>Backend preferido (si aplica)</label>
+              <select id="backendStack">
+                <option value="Elige tú (recomendado)">A) Elige tú (recomendado)</option>
+                <option value="Node.js (Express)">B) Node.js (Express)</option>
+                <option value="Node.js (NestJS)">C) Node.js (NestJS)</option>
+                <option value="Python (FastAPI)">D) Python (FastAPI)</option>
+                <option value="Firebase">E) Firebase</option>
+                <option value="Supabase">F) Supabase</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Autenticación (si aplica)</label>
+              <select id="authMode">
+                <option value="Sin login (demo)">A) Sin login (demo)</option>
+                <option value="Email/Password">B) Email/Password</option>
+                <option value="OAuth Google">C) OAuth Google</option>
+                <option value="Magic Link">D) Magic Link</option>
+              </select>
+            </div>
+            <div>
+              <label>Datos principales (si backend/DB)</label>
+              <input id="dataModel" placeholder="Ej: usuarios, citas, pagos, casos, productos" />
+            </div>
           </div>
 
           <div style="height:14px"></div>
@@ -794,13 +540,12 @@
             <button class="btn" id="btnCopyBrief">Copiar BRIEF</button>
             <button class="btn" id="btnSavePreset">Guardar preset</button>
             <button class="btn" id="btnLoadPreset">Cargar preset</button>
-            <button class="btn" id="btnIntegrationsGuide">Guía Integraciones</button>
             <button class="btn danger" id="btnReset">Reset</button>
           </div>
 
           <div style="height:10px"></div>
           <div class="hint">
-            Tip: Si una IA te da output flojo, pega el mismo prompt en otra IA.
+            Nota: el prompt siempre exige <b>SWITCHBOARD</b> (ON/OFF) y comentarios <b>// EDITAR AQUÍ</b> para que no adivines nada.
           </div>
         </div>
       </div>
@@ -810,7 +555,7 @@
         <div class="head">
           <div>
             <b>Salida</b>
-            <small>BRIEF + PROMPT listo para pegar. Cambia según Factory.</small>
+            <small>BRIEF + PROMPT MAESTRO listo para pegar. (El prompt se adapta si eliges App/Backend/Full-stack).</small>
           </div>
         </div>
         <div class="body">
@@ -823,15 +568,17 @@
           <div class="out" id="outPrompt">(Genera para ver contenido…)</div>
 
           <div style="height:12px"></div>
-          <div class="hint">La Guía de Integraciones te enseña a activar EmailJS/GA4/Stripe/Supabase/Firebase/reCAPTCHA sin adivinar.</div>
+
+          <div class="hint">
+            Flujo recomendado: Genera → copia prompt → pégalo en 2–3 IAs → eliges el mejor output → ya construyes.
+          </div>
         </div>
       </div>
-
     </div>
 
     <footer class="container">
       <div class="footRow">
-        <div>AI Code Sentinel · Prompt Factory v1.5 (personal)</div>
+        <div>AI Code Sentinel · Prompt Factory v1.3 (personal)</div>
         <div style="display:flex; gap:14px; flex-wrap:wrap;">
           <a href="#" id="openPrivacy">Privacidad</a>
           <a href="#" id="openTerms">Términos</a>
@@ -841,7 +588,7 @@
     </footer>
   </div>
 
-  <!-- Legal/Help/Guide modal -->
+  <!-- Legal modal -->
   <div class="modalWrap" id="modalWrap" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modalHead">
@@ -854,14 +601,8 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- Floating Bot -->
-  <div class="fab" id="fabBot" title="Bot / Guía">
-    <span class="miniDot"></span>
-    <span>Bot</span>
-  </div>
-
   <script>
-    // ===== Helpers =====
+    // === NO TOCAR (helpers) ===
     const $ = (id)=>document.getElementById(id);
     function toast(msg){
       const el = $("toast");
@@ -870,17 +611,35 @@
       clearTimeout(el._t);
       el._t = setTimeout(()=> el.classList.remove("on"), 1600);
     }
+    function readChecks(ids){
+      const obj = {};
+      ids.forEach(id => obj[id] = !!$(id).checked);
+      return obj;
+    }
     async function copyText(text){
       try{ await navigator.clipboard.writeText(text); toast("Copiado ✅"); }
       catch(e){ toast("No se pudo copiar (copia manual)"); }
     }
-    function readChecks(ids){
-      const obj = {};
-      ids.forEach(id => obj[id] = !!($(id)?.checked));
-      return obj;
-    }
 
-    // ===== Modal =====
+    // === Legal modal content (base/demo) ===
+    const PRIVACY_HTML = `
+      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
+      <p>Este documento es base (demo) para proyectos. Para producción real, validar con un profesional.</p>
+      <h3>Datos</h3>
+      <ul><li>Contacto (nombre/teléfono/correo)</li><li>Preferencias (citas/servicios)</li></ul>
+      <h3>Finalidad</h3>
+      <ul><li>Responder solicitudes</li><li>Agendar citas</li><li>Mejorar el servicio</li></ul>
+    `;
+    const TERMS_HTML = `
+      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
+      <p>Contenido informativo. La asesoría/servicio final depende de contrato, revisión y contexto.</p>
+      <h3>Uso</h3>
+      <ul><li>No usar para fines ilícitos</li><li>No suplantación</li></ul>
+    `;
+    const COOKIES_HTML = `
+      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
+      <p>Este sitio puede usar cookies para analítica y experiencia. En demos, puede omitirse o simularse.</p>
+    `;
     function openModal(title, html){
       $("modalTitle").textContent = title;
       $("modalBody").innerHTML = html;
@@ -891,465 +650,55 @@
       $("modalWrap").classList.remove("on");
       $("modalWrap").setAttribute("aria-hidden","true");
     }
+    $("openPrivacy").addEventListener("click",(e)=>{e.preventDefault(); openModal("Aviso de privacidad", PRIVACY_HTML);});
+    $("openTerms").addEventListener("click",(e)=>{e.preventDefault(); openModal("Términos y condiciones", TERMS_HTML);});
+    $("openCookies").addEventListener("click",(e)=>{e.preventDefault(); openModal("Política de cookies", COOKIES_HTML);});
     $("modalClose").addEventListener("click", closeModal);
     $("modalWrap").addEventListener("click",(e)=>{ if(e.target.id==="modalWrap") closeModal(); });
     document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
 
-    // ===== Legal content (base demo) =====
-    const PRIVACY_HTML = `
-      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
-      <p>Documento base (demo). Para producción real, validar con un profesional.</p>
-      <h3>Datos</h3>
-      <ul><li>Contacto (nombre/teléfono/correo)</li><li>Preferencias (citas/servicios)</li></ul>
-      <h3>Finalidad</h3>
-      <ul><li>Responder solicitudes</li><li>Agendar citas</li><li>Mejorar servicio</li></ul>
-    `;
-    const TERMS_HTML = `
-      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
-      <p>Contenido informativo. El servicio final depende de contrato, revisión y contexto.</p>
-      <h3>Uso</h3>
-      <ul><li>No usar para fines ilícitos</li><li>No suplantación</li></ul>
-    `;
-    const COOKIES_HTML = `
-      <p><b>Última actualización:</b> ${new Date().toLocaleDateString("es-MX")}</p>
-      <p>Este sitio puede usar cookies para analítica y experiencia. En demos, puede omitirse o simularse.</p>
-    `;
-    $("openPrivacy").addEventListener("click",(e)=>{e.preventDefault(); openModal("Aviso de privacidad", PRIVACY_HTML);});
-    $("openTerms").addEventListener("click",(e)=>{e.preventDefault(); openModal("Términos y condiciones", TERMS_HTML);});
-    $("openCookies").addEventListener("click",(e)=>{e.preventDefault(); openModal("Política de cookies", COOKIES_HTML);});
-
-    // ===== Bot / Help =====
-    function buildHelpHTML(){
-      const factory = $("factoryType").value;
-      const ai = $("aiTarget").value;
-      let msg = `<p><b>Bot:</b> te explico cómo usar esta página rápido.</p>
-      <ol>
-        <li>Elige <b>Factory</b> (Código/Imagen/Video/Workflow).</li>
-        <li>Llena lo mínimo.</li>
-        <li>Presiona <b>Generar Prompt</b>.</li>
-        <li>Presiona <b>Copiar PROMPT</b> y pégalo en tu IA: <b>${ai}</b>.</li>
-        <li>Si quieres activar integraciones, abre: <b>Guía Integraciones</b>.</li>
-      </ol>`;
-
-      if(factory==="CODE"){
-        msg += `<h3>Factory: Código</h3>
-        <ul>
-          <li>El prompt exige <b>SWITCHBOARD</b> (ON/OFF) y comentarios <code>// EDITAR AQUÍ</code>.</li>
-          <li>Siempre incluye SEO y Legal por default.</li>
-          <li>Módulos “Música en la web/app” y “Bot guía dentro del sitio” son opcionales.</li>
-        </ul>`;
-      }
-      if(factory==="IMAGE"){
-        msg += `<h3>Factory: Imágenes</h3>
-        <p>Te genera prompt largo, prompt corto, negativos, parámetros y 3 variantes.</p>`;
-      }
-      if(factory==="VIDEO"){
-        msg += `<h3>Factory: Video</h3>
-        <p>Te genera hooks, guion, storyboard, texto en pantalla, CTA y checklist de edición.</p>`;
-      }
-      if(factory==="WORKFLOW"){
-        msg += `<h3>Factory: Workflows</h3>
-        <p>Te genera flujo paso a paso, datos, errores, logs y checklist de implementación.</p>`;
-      }
-      msg += `<p class="hint">Tip: si una IA te da output flojo, prueba otra IA con el mismo prompt.</p>`;
-      return msg;
-    }
-    function openHelp(){ openModal("Bot / Guía rápida", buildHelpHTML()); }
-    $("btnHelp").addEventListener("click", openHelp);
-    $("fabBot").addEventListener("click", openHelp);
-
-    // ===============================
-    // GUÍA DE INTEGRACIONES (ULTRA DETALLADA)
-    // ===============================
-    function buildIntegrationsGuideHTML(){
-      const integrations = readChecks(["i_emailjs","i_stripe","i_ga4","i_supabase","i_firebase","i_recaptcha"]);
-      const modules = readChecks(["m_whatsapp","m_form","m_booking","m_auth","m_admin","m_music_site","m_bot_site","m_legal"]);
-      const product = $("productType") ? $("productType").value : "(no aplica)";
-      const factory = $("factoryType").value;
-
-      let html = `
-      <p><b>Guía de Integraciones (modo: cero suposiciones).</b></p>
-      <p>Esta guía te dice <b>qué tocar</b>, <b>dónde tocarlo</b> y <b>cómo probar</b> que funcionó.</p>
-      <ul>
-        <li><b>Qué hace</b></li>
-        <li><b>Qué necesitas</b></li>
-        <li><b>Pasos exactos</b></li>
-        <li><b>Prueba rápida</b></li>
-        <li><b>Errores típicos</b></li>
-      </ul>
-      <p><b>Tu selección actual:</b> Factory = <b>${factory}</b> · Producto = <b>${product}</b></p>
-      `;
-
-      html += `
-      <h3>0) Regla de oro (ANTES de integrar)</h3>
-      <ol>
-        <li><b>Primero</b> haz que tu página/app funcione sin integraciones.</li>
-        <li>Activa <b>una</b> integración a la vez.</li>
-        <li>Si funciona: <b>commit</b>. Si falla: arreglas sin mezclar cosas.</li>
-      </ol>
-      <p class="hint">Así nunca te pierdes y sabes qué cambiaste.</p>
-      `;
-
-      if(modules.m_whatsapp){
-        html += `
-        <h3>1) WhatsApp flotante (módulo)</h3>
-        <p><b>Qué hace:</b> un botón flotante que abre WhatsApp con mensaje prellenado.</p>
-        <p><b>Qué necesitas:</b> tu número internacional.</p>
-        <ol>
-          <li>Formato recomendado México: <b>521</b> + número. Ej: <b>5216561234567</b></li>
-          <li>En el código generado por IA busca: <code>// EDITAR AQUÍ: WHATSAPP</code> o <code>WHATSAPP_NUMBER</code>.</li>
-          <li>Pega el número sin espacios, sin +, sin guiones.</li>
-          <li><b>Prueba:</b> abre la web en el celular → toca el botón → debe abrir WhatsApp.</li>
-        </ol>
-        <p><b>Errores típicos:</b> número mal formateado.</p>
-        `;
-      } else {
-        html += `<h3>1) WhatsApp flotante</h3><p class="hint">No está activado. Activa el módulo si quieres este botón.</p>`;
-      }
-
-      if(integrations.i_emailjs){
-        html += `
-        <h3>2) EmailJS (formulario → email, SIN backend)</h3>
-        <p><b>Qué hace:</b> cuando llenan el formulario, llega un correo a tu email.</p>
-        <p><b>Qué necesitas:</b> Service ID, Template ID y Public Key.</p>
-
-        <h4>Paso a paso (detallado)</h4>
-        <ol>
-          <li>Entra a EmailJS (web) y crea cuenta / inicia sesión.</li>
-          <li>Busca <b>Email Services</b> → clic en <b>Add New Service</b>.</li>
-          <li>Elige proveedor (ej. Gmail) y conecta tu correo siguiendo el asistente.</li>
-          <li>Al final verás un <b>Service ID</b>. Copia y guárdalo.</li>
-
-          <li>Ve a <b>Email Templates</b> → <b>Create New Template</b>.</li>
-          <li>En el template usa variables como: <code>{{name}}</code>, <code>{{email}}</code>, <code>{{message}}</code>, <code>{{phone}}</code>.</li>
-          <li>Guarda. Copia el <b>Template ID</b>.</li>
-
-          <li>Ve a <b>Account</b> o <b>API Keys</b> y copia tu <b>Public Key</b>.</li>
-
-          <li><b>En tu código</b> (el que generó la IA):
-            <ol>
-              <li>Busca: <code>// ACTIVAR INTEGRACIÓN: EMAILJS</code>.</li>
-              <li>Pega: <code>EMAILJS_PUBLIC_KEY</code>, <code>EMAILJS_SERVICE_ID</code>, <code>EMAILJS_TEMPLATE_ID</code>.</li>
-              <li>Asegúrate que los campos del formulario coincidan con las variables del template.</li>
-            </ol>
-          </li>
-
-          <li><b>Prueba:</b> publica → llena el formulario → revisa bandeja y spam.</li>
-        </ol>
-
-        <p><b>Errores típicos:</b></p>
-        <ul>
-          <li>No llega: revisa SPAM y que el Service esté conectado.</li>
-          <li>Variables no coinciden: template pide <code>{{name}}</code> pero tu form manda otro nombre.</li>
-          <li>Key incorrecta: usa <b>Public Key</b>.</li>
-        </ul>
-        `;
-      } else {
-        html += `<h3>2) EmailJS</h3><p class="hint">No está activado. Márcalo si quieres que el formulario mande correos sin backend.</p>`;
-      }
-
-      if(integrations.i_ga4){
-        html += `
-        <h3>3) Google Analytics 4 (GA4)</h3>
-        <p><b>Qué hace:</b> mide visitas, fuentes y eventos.</p>
-        <p><b>Qué necesitas:</b> Measurement ID tipo <code>G-XXXXXXXXXX</code>.</p>
-        <ol>
-          <li>En Google Analytics crea una <b>Propiedad GA4</b>.</li>
-          <li>Crea un <b>Data Stream</b> de tipo <b>Web</b>.</li>
-          <li>Copia el <b>Measurement ID</b> (<code>G-...</code>).</li>
-          <li>En tu código busca: <code>// ACTIVAR INTEGRACIÓN: GA4</code> y pega el ID.</li>
-          <li><b>Prueba:</b> abre tu web en incógnito y ve a “Tiempo real” en GA4.</li>
-        </ol>
-        <p><b>Errores típicos:</b> adblockers, ID mal pegado, esperar 1–3 minutos.</p>
-        `;
-      } else {
-        html += `<h3>3) GA4</h3><p class="hint">No está activado. Actívalo si quieres medir visitas y conversiones.</p>`;
-      }
-
-      if(integrations.i_stripe){
-        html += `
-        <h3>4) Stripe (pagos)</h3>
-        <p><b>Qué hace:</b> cobros con tarjeta.</p>
-        <p><b>Recomendación para iniciar:</b> <b>Payment Link</b> (lo más fácil).</p>
-
-        <h4>Opción simple: Payment Link</h4>
-        <ol>
-          <li>En Stripe crea un producto/precio o un Payment Link.</li>
-          <li>Stripe te da una URL. Cópiala.</li>
-          <li>En tu web, el botón “Pagar” solo abre ese link.</li>
-          <li><b>Prueba:</b> abre el link y verifica checkout.</li>
-        </ol>
-
-        <h4>Opción pro (requiere backend)</h4>
-        <p class="hint">Checkout Session necesita servidor o función serverless (seguridad).</p>
-
-        <p><b>Errores típicos:</b> cuenta sin verificar, confundir modo test vs live.</p>
-        `;
-      } else {
-        html += `<h3>4) Stripe</h3><p class="hint">No está activado. Si vas a cobrar, empieza con Payment Links.</p>`;
-      }
-
-      if(integrations.i_supabase){
-        html += `
-        <h3>5) Supabase (BD + Auth)</h3>
-        <p><b>Qué hace:</b> base de datos PostgreSQL + API + auth.</p>
-        <p><b>Qué necesitas:</b> Project URL y anon public key.</p>
-        <ol>
-          <li>En Supabase crea un proyecto.</li>
-          <li>Busca <b>Project URL</b> y <b>anon public key</b>.</li>
-          <li>En tu código busca: <code>// ACTIVAR INTEGRACIÓN: SUPABASE</code> y pega URL + key.</li>
-          <li>Crea una tabla (ej: leads o citas).</li>
-          <li><b>Prueba:</b> envía un registro desde tu web y revisa la tabla.</li>
-        </ol>
-        <p><b>Errores típicos:</b> RLS (permisos) bloqueando inserts en demos.</p>
-        `;
-      } else {
-        html += `<h3>5) Supabase</h3><p class="hint">No está activado. Actívalo si quieres BD real para leads/citas.</p>`;
-      }
-
-      if(integrations.i_firebase){
-        html += `
-        <h3>6) Firebase (Auth/DB rápido)</h3>
-        <p><b>Qué hace:</b> login rápido + Firestore.</p>
-        <p><b>Qué necesitas:</b> config web (apiKey, projectId, etc.).</p>
-        <ol>
-          <li>En Firebase crea un proyecto.</li>
-          <li>Agrega una app <b>Web</b>.</li>
-          <li>Copia la configuración.</li>
-          <li>En tu código busca: <code>// ACTIVAR INTEGRACIÓN: FIREBASE</code> y pega config.</li>
-          <li>Activa Authentication (Email/Password o Google).</li>
-          <li><b>Prueba:</b> registra/login y verifica en Firebase Auth.</li>
-        </ol>
-        <p><b>Errores típicos:</b> proveedor auth no activado, config mal pegada.</p>
-        `;
-      } else {
-        html += `<h3>6) Firebase</h3><p class="hint">No está activado. Útil para MVP con login rápido.</p>`;
-      }
-
-      if(integrations.i_recaptcha){
-        html += `
-        <h3>7) reCAPTCHA (anti-spam)</h3>
-        <p><b>Qué hace:</b> reduce spam en formularios.</p>
-        <p><b>Ojo:</b> validación real necesita backend (para usar Secret Key).</p>
-        <ol>
-          <li>Registra tu sitio en reCAPTCHA (Google).</li>
-          <li>Obtén <b>Site Key</b> (pública).</li>
-          <li>En el código busca: <code>// ACTIVAR INTEGRACIÓN: RECAPTCHA</code> y pega Site Key.</li>
-          <li><b>Producción:</b> enviar token a backend/serverless para validación con Secret Key.</li>
-        </ol>
-        `;
-      } else {
-        html += `<h3>7) reCAPTCHA</h3><p class="hint">No está activado. Úsalo si ya hay spam o si vas a producción.</p>`;
-      }
-
-      html += `<hr style="border:none;border-top:1px solid rgba(255,255,255,.12); margin:16px 0;">`;
-
-      html += `
-      <h3>8) Publicar (GitHub Pages) — paso a paso</h3>
-      <ol>
-        <li>Abre tu repo en GitHub.</li>
-        <li>Entra a <b>Settings</b>.</li>
-        <li>En el menú izquierdo busca <b>Pages</b>.</li>
-        <li>En <b>Source</b> selecciona:
-          <ul>
-            <li><b>Deploy from a branch</b></li>
-            <li>Branch: <b>main</b></li>
-            <li>Folder: <b>/ (root)</b></li>
-          </ul>
-        </li>
-        <li>Guarda.</li>
-        <li>Espera y recarga. Te dará una URL tipo: <code>https://TUUSUARIO.github.io/TUREPO/</code></li>
-      </ol>
-      <p><b>Si tarda:</b> es normal. A veces tarda unos minutos en actualizar.</p>
-      `;
-
-      return html;
-    }
-    function openIntegrationsGuide(){
-      openModal("Guía de Integraciones (paso a paso)", buildIntegrationsGuideHTML());
-    }
-
-    // ===== Show/Hide sections by factory =====
-    function syncSections(){
-      const f = $("factoryType").value;
-      $("sectionCode").style.display = (f==="CODE") ? "" : "none";
-      $("sectionImage").style.display = (f==="IMAGE") ? "" : "none";
-      $("sectionVideo").style.display = (f==="VIDEO") ? "" : "none";
-      $("sectionWorkflow").style.display = (f==="WORKFLOW") ? "" : "none";
-      generate();
-    }
-    $("factoryType").addEventListener("change", syncSections);
-
-    // ===== Music (for THIS micro-app) WebAudio ambient =====
-    let audioCtx=null, masterGain=null, osc1=null, osc2=null, lfo=null, lfoGain=null, isMusicOn=false;
-    function setMusicVol(){
-      const v = Number($("musicVol").value)/100;
-      if(masterGain) masterGain.gain.value = v*0.18;
-    }
-    $("musicVol").addEventListener("input", setMusicVol);
-
-    function startMusic(){
-      if(isMusicOn) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.03;
-      masterGain.connect(audioCtx.destination);
-
-      osc1 = audioCtx.createOscillator();
-      osc2 = audioCtx.createOscillator();
-      osc1.type = "sine";
-      osc2.type = "triangle";
-      osc1.frequency.value = 110;
-      osc2.frequency.value = 220;
-
-      lfo = audioCtx.createOscillator();
-      lfo.type = "sine";
-      lfo.frequency.value = 0.08;
-      lfoGain = audioCtx.createGain();
-      lfoGain.gain.value = 8;
-
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc2.frequency);
-
-      osc1.connect(masterGain);
-      osc2.connect(masterGain);
-
-      lfo.start();
-      osc1.start();
-      osc2.start();
-
-      isMusicOn = true;
-      $("btnMusic").textContent = "Música: ON";
-      setMusicVol();
-      toast("Música ON 🎵");
-    }
-    function stopMusic(){
-      if(!isMusicOn) return;
-      try{ osc1.stop(); osc2.stop(); lfo.stop(); }catch(e){}
-      try{ audioCtx.close(); }catch(e){}
-      audioCtx=null; masterGain=null; osc1=null; osc2=null; lfo=null; lfoGain=null;
-      isMusicOn=false;
-      $("btnMusic").textContent = "Música: OFF";
-      toast("Música OFF");
-    }
-    $("btnMusic").addEventListener("click", ()=>{
-      if(!isMusicOn) startMusic(); else stopMusic();
-    });
-
-    // ===== Prompt Builders =====
-    function buildMasterPrompt_CODE(briefText){
+    // === PROMPT MAESTRO (motor fijo) ===
+    function buildMasterPrompt(briefText){
       return `Actúa como arquitecto senior de productos digitales y desarrollador full-stack.
 
 Debes generar proyectos reales (nivel agencia), no ejemplos.
+Todo lo que entregues debe cumplir estas reglas:
 
 REGLAS OBLIGATORIAS:
-1) Código funcional base (sin backend si es demo, pero escalable).
+1) Código funcional en su versión base (sin backend si es demo, pero escalable).
 2) Código comentado y estructurado.
-3) Marcar SIEMPRE con:
+3) Marcar SIEMPRE con comentarios:
    // EDITAR AQUÍ
    // MÓDULO OPCIONAL
    // ACTIVAR INTEGRACIÓN
    // NO TOCAR
-4) Incluir "SWITCHBOARD" ON/OFF al inicio.
-5) Incluir SEO por default (title, meta description, OG, headings, ALT, favicon; Schema si se pidió).
-6) Incluir footer legal por default (Privacidad/Términos/Cookies según pack).
-7) Si se seleccionó “Música en la web/app”: toggle + volumen.
-8) Si se seleccionó “Bot guía dentro del sitio”: asistente local (FAQ) + hook para chat externo.
-9) Explicar herramientas y pasos concretos para activar integraciones seleccionadas (EmailJS, Stripe, GA4, Supabase, Firebase, reCAPTCHA).
+4) Incluir un "SWITCHBOARD" al inicio para activar/desactivar módulos e integraciones (ON/OFF).
+5) Incluir SEO por default (mínimo): title, meta description, Open Graph, headings correctos y alt en imágenes.
+6) Incluir footer legal por default (según el pack): Privacidad / Términos / Cookies.
+7) Explicar herramientas y pasos concretos para activar integraciones (EmailJS, Stripe, GA4, etc.).
+8) Pensar el proyecto como escalable y vendible.
 
-INPUT (BRIEF):
+INPUT DEL PROYECTO (BRIEF):
 ${briefText}
 
 OUTPUT OBLIGATORIO:
-1) Arquitectura (secciones/pantallas + flujo)
-2) Stack recomendado + por qué
-3) Wireflow
-4) Código completo funcional
-5) Switchboard ON/OFF + dónde pegar API keys
-6) Lista exacta de lugares editables
-7) Guía de activación de integraciones
-8) Checklist calidad (SEO, performance, accesibilidad)
+1) Arquitectura del proyecto (pantallas/secciones y flujo)
+2) Stack recomendado (herramientas) + por qué
+3) Wireflow (cómo navega el usuario)
+4) Código completo funcional (si es web demo: en un solo index.html)
+5) Switchboard de módulos (ON/OFF) + dónde pegar API keys
+6) Lista exacta de lugares editables (teléfono, textos, imágenes, colores, links)
+7) Guía de activación de integraciones (paso a paso)
+8) Checklist de calidad (SEO básico, performance, accesibilidad)
 
-No teoría. No simplifiques. Entrega ejecución clara y profesional.`;
+No simplifiques.
+No me des teoría.
+Entrega ejecución clara, ordenada y profesional.`;
     }
 
-    function buildMasterPrompt_IMAGE(briefText){
-      return `Actúa como director creativo y prompt engineer de imagen.
-
-Entrega:
-- Prompt principal (detallado)
-- Prompt corto
-- Negativos
-- Parámetros sugeridos (aspect ratio, calidad, estilo, iluminación)
-- Variantes (3)
-
-INPUT (BRIEF):
-${briefText}
-
-OUTPUT:
-1) Prompt principal (ES)
-2) Prompt principal (EN)
-3) Negativos (ES)
-4) Parámetros
-5) 3 variantes
-6) Notas para consistencia de marca.`;
-    }
-
-    function buildMasterPrompt_VIDEO(briefText){
-      return `Actúa como guionista + director de edición + prompt engineer de video.
-
-Entrega:
-- Hook x3
-- Guion final
-- Storyboard por escenas
-- Texto en pantalla por escena
-- Música/SFX sugeridos
-- CTA + caption
-- Checklist edición
-- (Opcional) prompts para clips
-
-INPUT (BRIEF):
-${briefText}
-
-OUTPUT:
-1) Hook x3
-2) Guion
-3) Storyboard (escena 1..N)
-4) Texto en pantalla (por escena)
-5) CTA + caption
-6) Checklist edición
-7) Prompts para clips (si aplica).`;
-    }
-
-    function buildMasterPrompt_WORKFLOW(briefText){
-      return `Actúa como arquitecto de automatizaciones (workflows) y especialista en integraciones.
-
-Entrega:
-- Flujo paso a paso
-- Triggers, acciones, condiciones
-- Esquema de datos + ejemplo JSON
-- Errores/reintentos
-- Logs/alertas
-- Recomendación de herramienta + por qué
-- Checklist implementación
-
-INPUT (BRIEF):
-${briefText}
-
-OUTPUT:
-1) Flujo numerado
-2) Trigger(s) + inputs
-3) Acciones/herramientas
-4) Condiciones
-5) Datos + JSON ejemplo
-6) Errores/reintentos
-7) Checklist
-8) Recomendación final.`;
-    }
-
-    // ===== BRIEF builders =====
-    function buildBrief_CODE(){
+    function buildBrief(){
       const productType = $("productType").value;
+      const aiTarget = $("aiTarget").value;
       const projectType = $("projectType").value;
       const niche = $("niche").value;
       const goal = $("goal").value;
@@ -1373,237 +722,143 @@ OUTPUT:
       const authMode = $("authMode").value;
       const dataModel = $("dataModel").value.trim() || "(No especificado)";
 
-      const modules = readChecks(["m_whatsapp","m_form","m_booking","m_auth","m_admin","m_music_site","m_bot_site","m_legal"]);
-      const integrations = readChecks(["i_emailjs","i_stripe","i_ga4","i_supabase","i_firebase","i_recaptcha"]);
+      const modules = readChecks(["m_whatsapp","m_form","m_booking","m_auth","m_anim","m_music","m_legal","m_admin"]);
+      const integrations = readChecks(["i_emailjs","i_stripe","i_paypal","i_gcal","i_supabase","i_firebase","i_ga4","i_maps","i_recaptcha","i_onesignal"]);
 
       const moduleList = [
         modules.m_whatsapp ? "WhatsApp flotante" : null,
         modules.m_form ? "Formulario validado" : null,
         modules.m_booking ? "Agenda demo (localStorage)" : null,
         modules.m_auth ? "Login/Auth" : null,
-        modules.m_admin ? "Panel admin/CRUD" : null,
-        modules.m_music_site ? "Música dentro del sitio (toggle+volumen)" : null,
-        modules.m_bot_site ? "Bot guía dentro del sitio (FAQ/guía + hook chat)" : null,
-        modules.m_legal ? "Legal (footer)" : null,
+        modules.m_admin ? "Panel admin / CRUD" : null,
+        modules.m_anim ? "Animaciones (scroll reveal)" : null,
+        modules.m_music ? "Música ambiental (Web Audio)" : null,
+        modules.m_legal ? "Legal (footer + modales)" : null,
       ].filter(Boolean).join(", ") || "(ninguno)";
 
       const integList = [
-        integrations.i_emailjs ? "EmailJS" : null,
-        integrations.i_stripe ? "Stripe" : null,
-        integrations.i_ga4 ? "GA4" : null,
-        integrations.i_supabase ? "Supabase" : null,
-        integrations.i_firebase ? "Firebase" : null,
-        integrations.i_recaptcha ? "reCAPTCHA" : null,
+        integrations.i_emailjs ? "EmailJS (form->email sin backend)" : null,
+        integrations.i_stripe ? "Stripe (pagos/checkout)" : null,
+        integrations.i_paypal ? "PayPal (pagos)" : null,
+        integrations.i_gcal ? "Google Calendar (citas)" : null,
+        integrations.i_supabase ? "Supabase (BD/usuarios)" : null,
+        integrations.i_firebase ? "Firebase (auth/DB)" : null,
+        integrations.i_ga4 ? "GA4 (analytics + eventos)" : null,
+        integrations.i_maps ? "Maps (Google/Mapbox)" : null,
+        integrations.i_recaptcha ? "reCAPTCHA (anti-spam)" : null,
+        integrations.i_onesignal ? "OneSignal (push)" : null,
       ].filter(Boolean).join(", ") || "(ninguna)";
 
+      // Ajustes según producto
       const productExtra = (()=>{
         if(productType.startsWith("App móvil")){
-          return `=== APP MÓVIL ===
-Stack: ${appStack}
-Auth: ${authMode}
+          return `=== APP MÓVIL (REQUISITOS) ===
+Plataformas: iOS/Android
+Stack preferido: ${appStack}
+Autenticación: ${authMode}
 Pantallas mínimas: onboarding, login (si aplica), home, detalle, perfil/ajustes
-Requisito: instrucciones para correr en local.`;
+Requisito: navegación clara + estado + validaciones
+Exportable: instrucciones para correr en local y build básico`;
         }
         if(productType.startsWith("Backend")){
-          return `=== BACKEND / API ===
-Backend: ${backendStack}
+          return `=== BACKEND / API (REQUISITOS) ===
+Backend preferido: ${backendStack}
 Modelo de datos: ${dataModel}
-Endpoints mínimos: healthcheck, CRUD principal, auth (si aplica)
-Requisito: .env, validación, errores, ejemplos requests.`;
+Endpoints mínimos: auth (si aplica), CRUD principal, healthcheck
+Requisito: variables de entorno (.env), validación, manejo de errores
+Incluye ejemplo de requests y estructura de carpetas`;
         }
         if(productType.startsWith("Full-stack")){
-          return `=== FULL-STACK ===
+          return `=== FULL-STACK (REQUISITOS) ===
 Frontend: ${appStack}
 Backend: ${backendStack}
 Auth: ${authMode}
 Modelo de datos: ${dataModel}
-Requisito: contrato API, seguridad básica, .env, despliegue sugerido.`;
+Requisito: contrato API, seguridad básica, variables de entorno, despliegue sugerido`;
         }
-        return `=== WEB ===
-Tipo: ${projectType}
-Requisito: responsive, performance básico, accesible.`;
+        return `=== WEB (REQUISITOS) ===
+Tipo de proyecto: ${projectType}
+Requisito: responsive, performance básico, accesible, listo para publicar`;
       })();
 
-      return `=== FACTORY ===
-Código (web/apps/backend)
+      return `=== METADATA (USO PERSONAL) ===
+IA destino: ${aiTarget}
+Producto: ${productType}
 
-=== CONTEXTO ===
+=== CONTEXTO DEL PROYECTO ===
 Marca: ${brandName}
 Ciudad: ${city}
 Nicho: ${niche}
-Objetivo: ${goal}
+Objetivo principal: ${goal}
 Nivel: ${level}
 
-=== SOLUCIÓN ===
-Producto: ${productType}
-Tipo web (si aplica): ${projectType}
-
-=== IDENTIDAD ===
-Estilo: ${style}
+=== IDENTIDAD VISUAL ===
+Estilo visual: ${style}
 Colores: ${colors}
-Tono: ${tone}
+Tono del contenido: ${tone}
 
-=== IMÁGENES/ANIMACIÓN ===
-Estilo de imágenes: ${imgStyle} (ALT obligatorio)
-Animación: ${animLevel} (ligero)
+=== IMÁGENES ===
+Estilo de imágenes: ${imgStyle}
+Requisito: usar imágenes locales/embebidas o placeholders; siempre con ALT.
+
+=== ANIMACIONES ===
+Nivel: ${animLevel}
+Requisito: ligero, sin romper performance.
 
 === SEO ===
-${seoLevel}
+Nivel: ${seoLevel}
+Requisito mínimo: title+description, OG tags, headings correctos, alt, favicon. (Schema si aplica.)
 
-=== LEGAL ===
-${legalPack}
+=== LEGAL / FOOTER ===
+Pack: ${legalPack}
+Requisito: footer con enlaces a Privacidad/Términos/Cookies en modales o secciones.
 
-=== CONTENIDO/FEATURES ===
-Servicios/features: ${services}
+=== CONTENIDO / FEATURES ===
+Servicios / features principales: ${services}
+Requisito: generar copy en español listo para usar.
 
-=== MÓDULOS ===
-${moduleList}
+=== FUNCIONALIDADES (MÓDULOS) ===
+Incluir: ${moduleList}
 
-=== INTEGRACIONES (ACTIVABLES) ===
-${integList}
+=== INTEGRACIONES (LISTAS PARA ACTIVAR) ===
+Incluir: ${integList}
 
-=== DATOS EDITABLES ===
+=== DATOS EDITABLES (OBLIGATORIO MARCAR EN CÓDIGO) ===
 WhatsApp: ${whatsapp}
 
 ${productExtra}
 
-=== REGLAS DE ENTREGA ===
-- SWITCHBOARD ON/OFF
-- Comentarios: // EDITAR AQUÍ, // MÓDULO OPCIONAL, // ACTIVAR INTEGRACIÓN, // NO TOCAR
-- Guía de publicación/ejecución incluida.`;
-    }
-
-    function buildBrief_IMAGE(){
-      const brand = $("imgBrand").value.trim() || "(marca no definida)";
-      const palette = $("imgPalette").value.trim() || "(paleta no definida)";
-      const type = $("imgType").value;
-      const format = $("imgFormat").value;
-      const aesthetic = $("imgAesthetic").value;
-      const quality = $("imgQuality").value;
-      const content = $("imgContent").value.trim() || "(contenido no definido)";
-      const neg = $("imgNeg").value.trim() || "(sin negativos especificados)";
-
-      return `=== FACTORY ===
-Imágenes (prompts visuales)
-
-Tipo: ${type}
-Formato: ${format}
-Estética: ${aesthetic}
-Calidad: ${quality}
-
-Marca/tema: ${brand}
-Paleta: ${palette}
-
-Contenido:
-${content}
-
-Negativos:
-${neg}`;
-    }
-
-    function buildBrief_VIDEO(){
-      const type = $("vidType").value;
-      const duration = $("vidDuration").value;
-      const tone = $("vidTone").value;
-      const format = $("vidFormat").value;
-      const brand = $("vidBrand").value.trim() || "(marca/tema no definido)";
-      const cta = $("vidCta").value.trim() || "(CTA no definido)";
-      const msg = $("vidMessage").value.trim() || "(mensaje no definido)";
-      const tool = $("vidTool").value;
-      const voice = $("vidVoice").value;
-
-      return `=== FACTORY ===
-Video (guion + storyboard + prompts)
-
-Tipo: ${type}
-Duración: ${duration}
-Formato: ${format}
-Tono: ${tone}
-
-Marca/tema: ${brand}
-Mensaje principal:
-${msg}
-
-CTA:
-${cta}
-
-Herramienta objetivo: ${tool}
-Voz: ${voice}`;
-    }
-
-    function buildBrief_WORKFLOW(){
-      const tool = $("wfTool").value;
-      const goal = $("wfGoal").value;
-      const trigger = $("wfTrigger").value.trim() || "(trigger no definido)";
-      const target = $("wfTarget").value.trim() || "(destino no definido)";
-      const data = $("wfData").value.trim() || "(datos no definidos)";
-      const rules = $("wfRules").value.trim() || "(reglas no definidas)";
-      const notes = $("wfNotes").value.trim() || "(sin notas)";
-
-      return `=== FACTORY ===
-Workflows (automatizaciones)
-
-Herramienta: ${tool}
-Objetivo: ${goal}
-
-Trigger:
-${trigger}
-
-Destino:
-${target}
-
-Datos:
-${data}
-
-Reglas:
-${rules}
-
-Notas:
-${notes}`;
-    }
-
-    function buildBriefByFactory(factory){
-      if(factory==="CODE") return buildBrief_CODE();
-      if(factory==="IMAGE") return buildBrief_IMAGE();
-      if(factory==="VIDEO") return buildBrief_VIDEO();
-      return buildBrief_WORKFLOW();
-    }
-    function buildMasterPromptByFactory(factory, brief){
-      if(factory==="CODE") return buildMasterPrompt_CODE(brief);
-      if(factory==="IMAGE") return buildMasterPrompt_IMAGE(brief);
-      if(factory==="VIDEO") return buildMasterPrompt_VIDEO(brief);
-      return buildMasterPrompt_WORKFLOW(brief);
+=== REQUISITOS DE ENTREGA DEL CÓDIGO ===
+- Incluir "SWITCHBOARD" al inicio para activar/desactivar módulos e integraciones.
+- Marcar con comentarios:
+  // EDITAR AQUÍ (teléfono, textos, colores, imágenes, links)
+  // MÓDULO OPCIONAL (bloques)
+  // ACTIVAR INTEGRACIÓN (dónde pegar API KEY / IDs)
+  // NO TOCAR (lógica)
+- Explicar herramientas y pasos concretos para activar cada integración seleccionada.
+- Incluir instrucciones de publicación (GitHub Pages/Netlify) o ejecución (si app/backend).`;
     }
 
     function generate(){
-      const factory = $("factoryType").value;
-      const brief = buildBriefByFactory(factory);
-      const prompt = buildMasterPromptByFactory(factory, brief);
+      const brief = buildBrief();
+      const prompt = buildMasterPrompt(brief);
       $("outBrief").textContent = brief;
       $("outPrompt").textContent = prompt;
+      toast("Generado ✅");
     }
 
-    // ===== Presets =====
-    const PRESET_KEY = "acs_prompt_factory_presets_v15";
+    // Presets (localStorage)
+    const PRESET_KEY = "acs_prompt_factory_presets_v1";
     function loadPresets(){ try{ return JSON.parse(localStorage.getItem(PRESET_KEY)||"[]"); }catch(e){ return []; } }
     function savePresets(list){ localStorage.setItem(PRESET_KEY, JSON.stringify(list)); }
 
     function getState(){
       const ids = [
-        "factoryType","aiTarget",
-        // CODE
-        "productType","projectType","niche","goal","level","tone","brandName","city","whatsapp","services","style","colors","imgStyle","animLevel","seoLevel","legalPack",
+        "productType","aiTarget","projectType","niche","goal","level","style","colors",
+        "brandName","city","whatsapp","tone","services","imgStyle","animLevel","seoLevel","legalPack",
         "appStack","backendStack","authMode","dataModel",
-        "m_whatsapp","m_form","m_booking","m_auth","m_admin","m_music_site","m_bot_site","m_legal",
-        "i_emailjs","i_stripe","i_ga4","i_supabase","i_firebase","i_recaptcha",
-        // IMAGE
-        "imgType","imgFormat","imgAesthetic","imgQuality","imgBrand","imgPalette","imgContent","imgNeg",
-        // VIDEO
-        "vidType","vidDuration","vidTone","vidFormat","vidBrand","vidCta","vidMessage","vidTool","vidVoice",
-        // WF
-        "wfTool","wfGoal","wfTrigger","wfTarget","wfData","wfRules","wfNotes",
-        // music UI
-        "musicVol"
+        "m_whatsapp","m_form","m_booking","m_auth","m_anim","m_music","m_legal","m_admin",
+        "i_emailjs","i_stripe","i_paypal","i_gcal","i_supabase","i_firebase","i_ga4","i_maps","i_recaptcha","i_onesignal"
       ];
       const state = {};
       ids.forEach(id=>{
@@ -1613,6 +868,7 @@ ${notes}`;
       });
       return state;
     }
+
     function setState(state){
       Object.keys(state).forEach(id=>{
         const el = $(id);
@@ -1620,18 +876,18 @@ ${notes}`;
         if(el.type === "checkbox") el.checked = !!state[id];
         else el.value = state[id];
       });
-      setMusicVol();
-      syncSections();
       generate();
     }
+
     function savePreset(){
-      const name = prompt("Nombre del preset (ej: Abogados Premium / Logo ACS / Workflow WhatsApp):");
+      const name = prompt("Nombre del preset (ej: Abogados Premium, Restaurante, App MVP):");
       if(!name) return;
       const presets = loadPresets();
       presets.unshift({ name, state: getState(), savedAt: Date.now() });
-      savePresets(presets.slice(0,40));
+      savePresets(presets.slice(0,30));
       toast("Preset guardado ✅");
     }
+
     function loadPreset(){
       const presets = loadPresets();
       if(presets.length===0){ toast("No hay presets"); return; }
@@ -1644,8 +900,8 @@ ${notes}`;
       toast("Preset cargado ✅");
     }
 
-    // ===== Events =====
-    $("btnGenerate").addEventListener("click", ()=>{ generate(); toast("Generado ✅"); });
+    // Eventos
+    $("btnGenerate").addEventListener("click", generate);
     $("btnCopyPrompt").addEventListener("click", ()=>{
       const t = $("outPrompt").textContent;
       if(!t || t.includes("(Genera")){ toast("Primero genera"); return; }
@@ -1658,30 +914,56 @@ ${notes}`;
     });
     $("btnSavePreset").addEventListener("click", savePreset);
     $("btnLoadPreset").addEventListener("click", loadPreset);
-    $("btnIntegrationsGuide").addEventListener("click", openIntegrationsGuide);
 
     $("btnReset").addEventListener("click", ()=>{
-      location.reload();
+      // Defaults sanos
+      $("productType").selectedIndex = 0;
+      $("aiTarget").selectedIndex = 0;
+      $("projectType").selectedIndex = 0;
+      $("niche").selectedIndex = 0;
+      $("goal").selectedIndex = 0;
+      $("level").selectedIndex = 0;
+      $("style").selectedIndex = 0;
+      $("colors").selectedIndex = 0;
+      $("tone").selectedIndex = 0;
+      $("imgStyle").selectedIndex = 0;
+      $("animLevel").selectedIndex = 0;
+      $("seoLevel").selectedIndex = 1;   // SEO + Schema por default
+      $("legalPack").selectedIndex = 0;
+
+      $("appStack").selectedIndex = 0;
+      $("backendStack").selectedIndex = 0;
+      $("authMode").selectedIndex = 0;
+
+      $("brandName").value = "";
+      $("city").value = "";
+      $("whatsapp").value = "";
+      $("services").value = "";
+      $("dataModel").value = "";
+
+      $("m_whatsapp").checked = true;
+      $("m_form").checked = true;
+      $("m_booking").checked = false;
+      $("m_auth").checked = false;
+      $("m_anim").checked = true;
+      $("m_music").checked = false;
+      $("m_legal").checked = true;
+      $("m_admin").checked = false;
+
+      ["i_emailjs","i_stripe","i_paypal","i_gcal","i_supabase","i_firebase","i_ga4","i_maps","i_recaptcha","i_onesignal"]
+        .forEach(id => $(id).checked = false);
+
+      $("outBrief").textContent = "(Genera para ver contenido…)";
+      $("outPrompt").textContent = "(Genera para ver contenido…)";
+      toast("Reset ✅");
     });
 
-    // ===== Boot defaults =====
+    // Auto-fill ejemplo (para que siempre veas algo)
     window.addEventListener("load", ()=>{
       $("brandName").value = "García y Asociados";
       $("city").value = "Ciudad Juárez";
       $("services").value = "Civil, Mercantil, Laboral";
       $("seoLevel").value = "SEO + Open Graph + Schema (JSON-LD)";
-      $("imgBrand").value = "AI Code Sentinel";
-      $("imgPalette").value = "negro, blanco, cian";
-      $("vidBrand").value = "AI Code Sentinel";
-      $("vidCta").value = "Escribe WhatsApp";
-      $("vidMessage").value = "Ayudamos a negocios a automatizar y vender con IA: rápido, claro, sin humo.";
-      $("wfTrigger").value = "Nuevo lead en formulario web";
-      $("wfTarget").value = "Google Sheets + WhatsApp Business";
-      $("wfData").value = "nombre, teléfono, servicio, origen";
-      $("wfRules").value = "si servicio=legal → tag 'legal'; si no → tag 'general'";
-      $("musicVol").value = "18";
-      setMusicVol();
-      syncSections();
       generate();
     });
   </script>
