@@ -3,1103 +3,180 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AI Code Sentinel — Prompt Factory</title>
-  <meta name="description" content="Genera BRIEF + PROMPT (MASTER) o META (fábrica) y META² (meta-meta) para code/image/video/workflows." />
-  <style>
-    :root{
-      --bg:#0b1220;
-      --panel:#0f1b33;
-      --panel2:#0c1730;
-      --border:rgba(255,255,255,.10);
-      --text:rgba(255,255,255,.90);
-      --muted:rgba(255,255,255,.65);
-      --muted2:rgba(255,255,255,.45);
-      --accent:#57d3ff;
-      --accent2:#6c8cff;
-      --good:#37d67a;
-      --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --chip:rgba(87,211,255,.12);
-      --shadow:0 10px 30px rgba(0,0,0,.45);
-      --radius:16px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 10% 0%, rgba(87,211,255,.14), transparent 60%),
-        radial-gradient(1000px 500px at 100% 10%, rgba(108,140,255,.12), transparent 55%),
-        radial-gradient(900px 700px at 60% 100%, rgba(55,214,122,.10), transparent 60%),
-        var(--bg);
-      min-height:100vh;
-      padding:22px;
-    }
-    .wrap{max-width:1200px;margin:0 auto}
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:14px 16px; border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border-radius:var(--radius); box-shadow:var(--shadow);
-    }
-    .brand{display:flex; align-items:center; gap:12px}
-    .logo{
-      width:40px;height:40px;border-radius:12px;
-      background:radial-gradient(circle at 30% 30%, #7ef3ff, #2b77ff 65%, #152049);
-      box-shadow:0 10px 24px rgba(87,211,255,.18);
-      border:1px solid rgba(255,255,255,.18);
-      flex:0 0 auto;
-      background-size:cover;
-      background-position:center;
-    }
-    .btitles h1{font-size:14px;letter-spacing:.14em;margin:0;text-transform:uppercase}
-    .btitles p{margin:2px 0 0 0;font-size:12px;color:var(--muted)}
-    .status{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border:1px solid var(--border);
-      border-radius:999px; background:rgba(255,255,255,.04);
-      font-size:12px; color:var(--muted);
-    }
-    .dot{width:10px;height:10px;border-radius:50%; background:var(--good); box-shadow:0 0 0 4px rgba(55,214,122,.12)}
-    .ver{font-family:var(--mono); font-size:12px; color:rgba(255,255,255,.75)}
-    .grid{display:grid; grid-template-columns: 1.05fr .95fr; gap:14px; margin-top:14px}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
-    .card{
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .cardhead{
-      padding:14px 16px; border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    .cardhead .title{font-size:14px; font-weight:700}
-    .cardhead .sub{font-size:12px;color:var(--muted); margin-top:2px}
-    .headleft{display:flex; flex-direction:column}
-    .modes{display:flex; gap:8px; flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.88);
-      padding:8px 12px; border-radius:999px;
-      font-weight:700; font-size:12px; cursor:pointer;
-      transition:.15s transform, .15s background, .15s border-color;
-      user-select:none;
-    }
-    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.07)}
-    .btn.active{
-      border-color:rgba(87,211,255,.55);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      box-shadow:0 8px 18px rgba(87,211,255,.12);
-    }
-    .content{padding:14px 16px}
-    .hint{
-      padding:10px 12px; border:1px dashed rgba(255,255,255,.16);
-      border-radius:12px; color:var(--muted); font-size:12px;
-      background:rgba(0,0,0,.10);
-      margin-bottom:12px;
-    }
-    .formgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-    @media (max-width: 780px){ .formgrid{grid-template-columns:1fr} }
-    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
-    select,input,textarea{
-      width:100%;
-      padding:10px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(10,18,34,.55);
-      color:rgba(255,255,255,.92);
-      outline:none;
-    }
-    textarea{min-height:84px; resize:vertical}
-    .field{display:flex; flex-direction:column}
-    .row2{grid-column:1 / -1}
-    .mini{font-size:11px; color:var(--muted2); margin-top:6px}
-    .toggles{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
-    .check{
-      display:flex; align-items:flex-start; gap:10px;
-      padding:10px 10px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03); border-radius:12px;
-      flex:1 1 220px;
-    }
-    .check input{width:auto; margin-top:2px}
-    .check b{display:block; font-size:12px}
-    .check span{display:block; font-size:11px; color:var(--muted)}
-    .actions{
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:12px
-    }
-    .action{
-      border:1px solid rgba(87,211,255,.35);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      padding:10px 12px; border-radius:12px;
-      font-weight:800; font-size:12px; cursor:pointer;
-    }
-    .action.secondary{
-      border-color:rgba(255,255,255,.16);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.86);
-      font-weight:700;
-    }
-    .outhead{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      padding:14px 16px; border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-    }
-    .outhead .t{font-weight:800}
-    .outhead .s{font-size:12px;color:var(--muted)}
-    .outactions{display:flex; gap:8px; flex-wrap:wrap}
-    .chip{
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03);
-      color:rgba(255,255,255,.86);
-      font-size:12px; cursor:pointer;
-    }
-    .chip.primary{
-      border-color:rgba(87,211,255,.35);
-      background:rgba(87,211,255,.10);
-    }
-    .output{
-      padding:14px 16px;
-    }
-    pre{
-      margin:0;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.20);
-      overflow:auto;
-      font-family:var(--mono);
-      font-size:12px;
-      line-height:1.45;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .seg{
-      display:flex; gap:8px; flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .seg .pillseg{
-      padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03); font-size:12px; cursor:pointer;
-    }
-    .pillseg.active{border-color:rgba(108,140,255,.45); background:rgba(108,140,255,.12)}
-    .bot{
-      position:fixed;
-      right:18px; bottom:18px;
-      padding:10px 12px; border-radius:999px;
-      border:1px solid rgba(87,211,255,.35);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      user-select:none;
-    }
-    dialog{
-      width:min(880px, 94vw);
-      border:none;
-      border-radius:18px;
-      padding:0;
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow:var(--shadow);
-    }
-    dialog::backdrop{background:rgba(0,0,0,.6)}
-    .modalhead{
-      padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.12);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .modalhead b{font-size:14px}
-    .modalbody{padding:14px 16px}
-    .close{cursor:pointer; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04)}
-    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width:900px){ .two{grid-template-columns:1fr} }
-    .warn{color:var(--warn)}
-    .good{color:var(--good)}
-    .muted{color:var(--muted)}
-    .small{font-size:12px}
-  </style>
+  <title>AI Code Sentinel — Prompt OS COSMOS</title>
+  <meta name="description" content="Prompt OS COSMOS: decide estrategia (MASTER/META/META²) y genera prompts, workflows, guías, SEO/Legal y código base. 100% local." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
+  <header class="topbar">
     <div class="brand">
-      <div class="logo" id="logoBox" title="Logo (puedes poner imagen)"></div>
-      <div class="btitles">
-        <h1>AI CODE SENTINEL — PROMPT FACTORY</h1>
-        <p>MASTER (fusionado) · META (fábrica) · META² (decide estrategia) · 100% local</p>
+      <div class="logo" id="logoBox" title="Logo"></div>
+      <div class="titles">
+        <div class="kicker">AI CODE SENTINEL</div>
+        <h1>PROMPT OS <span class="cosmos">COSMOS</span></h1>
+        <p>Intent Engine · Multi-artefactos · Editor · Presets · Export/Import · Código base · SEO+Legal</p>
       </div>
     </div>
-    <div class="status">
-      <span class="pill"><span class="dot"></span> Sin backend</span>
-      <span class="pill"><span class="ver" id="verTxt">v1.7</span></span>
-    </div>
-  </div>
 
-  <div class="grid">
+    <div class="right">
+      <div class="pill">
+        <span class="dot"></span><span>Local / Gratis</span>
+      </div>
+      <div class="pill mono" id="verPill">v3.0-cosmos</div>
+      <button class="btn ghost" id="btnHelp">Cómo usar</button>
+      <button class="btn ghost" id="btnGuide">Guía Integraciones</button>
+      <button class="btn ghost" id="btnEditor">Editor</button>
+      <button class="btn" id="btnLogo">Logo</button>
+    </div>
+  </header>
+
+  <main class="grid">
     <!-- LEFT -->
-    <div class="card">
-      <div class="cardhead">
-        <div class="headleft">
-          <div class="title">Brief con opciones</div>
-          <div class="sub">Elige modo y opciones. Si no existe tu caso, usa <b>Personalizado</b> y escribe.</div>
+    <section class="card">
+      <div class="cardHead">
+        <div>
+          <div class="title">Proyecto</div>
+          <div class="sub">Llena lo mínimo. El sistema infiere estrategia y genera artefactos.</div>
         </div>
-        <div class="modes">
-          <button class="btn active" id="btnMaster">MASTER</button>
-          <button class="btn" id="btnMeta">META</button>
-          <button class="btn" id="btnMeta2">META²</button>
+        <div class="modePill" id="modePill">
+          <span class="mono" id="modeText">Estrategia: AUTO</span>
+          <span class="badge" id="modeBadge">AUTO</span>
         </div>
       </div>
 
-      <div class="content">
+      <div class="cardBody">
         <div class="hint">
-          ✅ Regla de oro: <b>Generar → Copiar → Pegar en tu IA</b>. <br/>
-          <span class="muted">MASTER = 1 bloque listo. META = meta-brief + meta-prompt (separados por diseño). META² = decide MASTER vs META y fabrica lo óptimo.</span>
+          <b>Regla:</b> tú describes intención y constraints. <b>COSMOS decide</b> MASTER/META/META² y genera lo necesario.
         </div>
 
-        <div class="formgrid">
-          <!-- GLOBAL -->
-          <div class="field">
-            <label>Factory (tipo)</label>
-            <select id="factory">
-              <option value="CODE">A) Código (web/apps/backend)</option>
-              <option value="IMAGE">B) Imágenes (logos/ads/ui)</option>
-              <option value="VIDEO">C) Video (guion/story/captions)</option>
-              <option value="WORKFLOW">D) Workflows (n8n/Make/Zapier/ManyChat)</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="factory_custom" placeholder="Escribe tu factory..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>IA / plataforma destino</label>
-            <select id="iaTarget">
-              <option value="agnostico">A) Cualquier IA (agnóstico)</option>
-              <option value="chatgpt">B) ChatGPT</option>
-              <option value="claude">C) Claude</option>
-              <option value="gemini">D) Gemini</option>
-              <option value="copilot">E) Copilot (ayuda code)</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="iaTarget_custom" placeholder="Escribe tu IA/plataforma..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Nicho / negocio</label>
-            <select id="nicho">
-              <option value="Abogados / legal">A) Abogados / legal</option>
-              <option value="Restaurante / comida">B) Restaurante / comida</option>
-              <option value="Gimnasio / fitness">C) Gimnasio / fitness</option>
-              <option value="Clínica / salud">D) Clínica / salud</option>
-              <option value="Ecommerce / tienda">E) Ecommerce / tienda</option>
-              <option value="Servicios locales">F) Servicios locales</option>
-              <option value="SaaS / software">G) SaaS / software</option>
-              <option value="Educación / cursos">H) Educación / cursos</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="nicho_custom" placeholder="Escribe tu nicho..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Nivel</label>
-            <select id="nivel">
-              <option value="Demo (mostrar rápido)">A) Demo (mostrar rápido)</option>
-              <option value="MVP (funcional)">B) MVP (funcional)</option>
-              <option value="Pro (cliente real)">C) Pro (cliente real)</option>
-              <option value="Agencia (entregable completo)">D) Agencia (entregable completo)</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="nivel_custom" placeholder="Escribe tu nivel..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Objetivo principal</label>
-            <select id="objetivo">
-              <option value="Captar leads">A) Captar leads</option>
-              <option value="Vender / cobrar">B) Vender / cobrar</option>
-              <option value="Reservas / citas">C) Reservas / citas</option>
-              <option value="Informar / autoridad">D) Informar / autoridad</option>
-              <option value="Portafolio / marca">E) Portafolio / marca</option>
-              <option value="Soporte / atención">F) Soporte / atención</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="objetivo_custom" placeholder="Escribe tu objetivo..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Estilo visual</label>
-            <select id="estilo">
-              <option value="Corporate premium">A) Corporate premium</option>
-              <option value="Minimal limpio">B) Minimal limpio</option>
-              <option value="Moderno tech">C) Moderno tech</option>
-              <option value="Elegante oscuro">D) Elegante oscuro</option>
-              <option value="Creativo / bold">E) Creativo / bold</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="estilo_custom" placeholder="Escribe tu estilo..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Colores</label>
-            <select id="colores">
-              <option value="Elige tú según el estilo">A) Elige tú según el estilo</option>
-              <option value="Azul / blanco (confianza)">B) Azul / blanco (confianza)</option>
-              <option value="Negro / dorado (lujo)">C) Negro / dorado (lujo)</option>
-              <option value="Verde / blanco (salud)">D) Verde / blanco (salud)</option>
-              <option value="Rojo / negro (energía)">E) Rojo / negro (energía)</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="colores_custom" placeholder="Escribe tus colores..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Tono del contenido</label>
-            <select id="tono">
-              <option value="Profesional y directo">A) Profesional y directo</option>
-              <option value="Amigable y claro">B) Amigable y claro</option>
-              <option value="Persuasivo (ventas)">C) Persuasivo (ventas)</option>
-              <option value="Autoridad / experto">D) Autoridad / experto</option>
-              <option value="Cálido y humano">E) Cálido y humano</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="tono_custom" placeholder="Escribe el tono..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Producto (tipo de solución)</label>
-            <select id="producto">
-              <option value="Web (página/sitio)">A) Web (página/sitio)</option>
-              <option value="App (web app)">B) App (web app)</option>
-              <option value="Backend / API">C) Backend / API</option>
-              <option value="Full-stack">D) Full-stack</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="producto_custom" placeholder="Escribe tu producto..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field">
-            <label>Tipo de proyecto (web)</label>
-            <select id="tipoWeb">
-              <option value="Landing page (1 página, conversión)">A) Landing page (1 página, conversión)</option>
-              <option value="Website (multipágina)">B) Website (multipágina)</option>
-              <option value="Ecommerce (catálogo + checkout)">C) Ecommerce (catálogo + checkout)</option>
-              <option value="Portafolio / perfil">D) Portafolio / perfil</option>
-              <option value="Blog / contenido">E) Blog / contenido</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="tipoWeb_custom" placeholder="Escribe tipo de web..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field row2">
-            <label>Nombre de marca</label>
-            <input id="marca" placeholder="Ej: García y Asociados" value="García y Asociados" />
-          </div>
-
-          <div class="field">
-            <label>Ciudad (opcional)</label>
-            <input id="ciudad" placeholder="Ej: Ciudad Juárez" value="Ciudad Juárez" />
-          </div>
-
-          <div class="field">
-            <label>WhatsApp (formato internacional)</label>
-            <input id="wa" placeholder="Ej: 5216561234567" />
-            <div class="mini">Sin +, sin espacios. Ej MX: 52 + 1 + número.</div>
-          </div>
-
-          <div class="field row2">
-            <label>Servicios / features (separados por coma)</label>
-            <input id="servicios" placeholder="Ej: Civil, Mercantil, Laboral" value="Civil, Mercantil, Laboral" />
-          </div>
-
-          <div class="field row2">
-            <label>Notas / requerimientos extra (opcional)</label>
-            <textarea id="notas" placeholder="Ej: evitar librerías, explicar como primaria, copy en español, usar animaciones suaves, etc."></textarea>
-          </div>
-
-          <!-- META SETTINGS -->
-          <div class="field" id="metaObjWrap" style="display:none">
-            <label>Objetivo del META (qué debe fabricar)</label>
-            <select id="metaObjetivo">
-              <option value="Generar MASTER PROMPT óptimo y después ejecutar el proyecto">A) Generar master prompt + ejecutar</option>
-              <option value="Solo generar el MASTER PROMPT (para revisarlo y reutilizarlo)">B) Solo generar master prompt</option>
-              <option value="Generar 3 variantes del MASTER PROMPT y recomendar la mejor">C) 3 variantes + recomendación</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="metaObjetivo_custom" placeholder="Escribe objetivo del META..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field" id="metaRobWrap" style="display:none">
-            <label>Robustez (anti-output flojo)</label>
-            <select id="robustez">
-              <option value="Normal">A) Normal</option>
-              <option value="Estricto (cero huecos, checklist)">B) Estricto</option>
-              <option value="Auditor (validar, detectar riesgos, proponer mejoras)">C) Auditor</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="robustez_custom" placeholder="Escribe robustez..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field" id="metaFmtWrap" style="display:none">
-            <label>Formato preferido del MASTER PROMPT</label>
-            <select id="fmtMaster">
-              <option value="Compacto (1 bloque listo para pegar)">A) Compacto</option>
-              <option value="Detallado (secciones + checklist)">B) Detallado</option>
-              <option value="Agencia (brief + entregables + QA)">C) Agencia</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="fmtMaster_custom" placeholder="Escribe formato..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field" id="metaCompatWrap" style="display:none">
-            <label>Compatibilidad multi-IA</label>
-            <select id="compat">
-              <option value="Agnóstico total (sin funciones exclusivas)">A) Agnóstico total</option>
-              <option value="Optimizado para la IA elegida (permite features)">B) Optimizado</option>
-              <option value="Híbrido (agnóstico + addons opcionales)">C) Híbrido</option>
-              <option value="__custom__">Z) Personalizado (escribe)</option>
-            </select>
-            <input id="compat_custom" placeholder="Escribe compatibilidad..." style="display:none;margin-top:8px" />
-          </div>
-
-          <!-- MODULES -->
-          <div class="field row2">
-            <label>Módulos (para code / web)</label>
-            <div class="toggles">
-              <div class="check">
-                <input type="checkbox" id="mWa" checked />
-                <div>
-                  <b>WhatsApp flotante</b>
-                  <span>Botón flotante con mensaje prellenado. Solo cambias teléfono.</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mForm" checked />
-                <div>
-                  <b>Formulario validado</b>
-                  <span>Sin backend: listo para EmailJS después.</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mAgenda" />
-                <div>
-                  <b>Agenda / citas</b>
-                  <span>Instrucciones para Calendly o alternativa gratis.</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mSeo" checked />
-                <div>
-                  <b>SEO básico</b>
-                  <span>Meta tags + Open Graph + schema.</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mLegal" checked />
-                <div>
-                  <b>Legal (footer)</b>
-                  <span>Privacidad · Términos · Aviso legal (plantilla).</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mAnim" />
-                <div>
-                  <b>Animaciones</b>
-                  <span>Scroll reveal / hover suave (sin librerías).</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mMedia" />
-                <div>
-                  <b>Imágenes + música</b>
-                  <span>Placeholders + audio opcional (local).</span>
-                </div>
-              </div>
-              <div class="check">
-                <input type="checkbox" id="mExplainBot" />
-                <div>
-                  <b>Bot “explicar página”</b>
-                  <span>Guía rápida dentro del sitio (sin IA real).</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="toolbar">
+          <button class="btn" id="btnGenerate">Generar</button>
+          <button class="btn ghost" id="btnReset">Reset</button>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="btnPresetSave">Guardar preset</button>
+          <button class="btn ghost" id="btnPresetLoad">Cargar preset</button>
+          <button class="btn ghost" id="btnExport">Export</button>
+          <button class="btn ghost" id="btnImport">Import</button>
         </div>
 
-        <div class="actions">
-          <button class="action" id="btnGen">Generar</button>
-          <button class="action secondary" id="btnReset">Reset</button>
-          <button class="action secondary" id="btnSave">Guardar preset</button>
-          <button class="action secondary" id="btnLoad">Cargar preset</button>
-          <button class="action secondary" id="btnLogo">Poner logo</button>
+        <div class="sectionTitle">Brief (con búsqueda + “Personalizado”)</div>
+        <div class="formGrid" id="formGrid"></div>
+
+        <div class="sectionTitle">Artefactos a generar</div>
+        <div class="artifactGrid" id="artifactGrid"></div>
+
+        <div class="sectionTitle">Módulos (para web/código)</div>
+        <div class="moduleGrid" id="moduleGrid"></div>
+
+        <div class="notes">
+          <label>Notas del sistema (opcional, pero poderoso)</label>
+          <textarea id="notes" placeholder="Ej: explícalo como primaria, output en español, sin librerías externas, assets locales, etc."></textarea>
         </div>
-        <div class="mini">Tip: si una lista no trae tu caso → elige <b>Z) Personalizado</b> y escribe. No rompe nada, solo lo añade.</div>
+
+        <div class="scoreBox" id="scoreBox" style="display:none">
+          <div class="scoreTitle">Intent Engine (por qué decidió)</div>
+          <div class="scores" id="scores"></div>
+          <div class="mini" id="scoreExplain"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
     <!-- RIGHT -->
-    <div class="card">
-      <div class="outhead">
+    <section class="card">
+      <div class="cardHead">
         <div>
-          <div class="t">Salida</div>
-          <div class="s" id="outSub">MASTER: BRIEF + PROMPT MAESTRO fusionado (1 bloque listo).</div>
+          <div class="title">Salida (multi-artefactos)</div>
+          <div class="sub" id="outSub">Genera y copia por pestañas.</div>
         </div>
-        <div class="outactions">
-          <button class="chip primary" id="copyAll">Copiar todo</button>
-          <button class="chip" id="copyTop">Copiar arriba</button>
-          <button class="chip" id="copyBottom">Copiar abajo</button>
-          <button class="chip" id="openGuide">Guía Integraciones</button>
+
+        <div class="outBtns">
+          <button class="btn" id="btnCopyCurrent">Copiar pestaña</button>
+          <button class="btn ghost" id="btnCopyAll">Copiar TODO</button>
+          <button class="btn ghost" id="btnDownload">Descargar ZIP-lite</button>
         </div>
       </div>
-      <div class="output">
-        <div class="seg" id="segWrap" style="display:none">
-          <div class="pillseg active" id="segA">Arriba</div>
-          <div class="pillseg" id="segB">Abajo</div>
+
+      <div class="cardBody">
+        <div class="tabs" id="tabs"></div>
+        <pre class="output" id="output">Haz clic en “Generar”.</pre>
+        <div class="mini">
+          Tip caché GitHub Pages: agrega <span class="mono">?v=cosmos</span> a la URL o recarga duro.
         </div>
-        <pre id="outPre">Haz clic en “Generar”.</pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- dialogs -->
+  <dialog id="dlgHelp">
+    <div class="dlgHead">
+      <b>Cómo usar (sin perder tiempo)</b>
+      <button class="btn ghost" data-close="dlgHelp">Cerrar</button>
+    </div>
+    <div class="dlgBody" id="helpBody"></div>
+  </dialog>
+
+  <dialog id="dlgGuide">
+    <div class="dlgHead">
+      <b>Guía Integraciones (paso a paso ultra)</b>
+      <button class="btn ghost" data-close="dlgGuide">Cerrar</button>
+    </div>
+    <div class="dlgBody" id="guideBody"></div>
+  </dialog>
+
+  <dialog id="dlgEditor">
+    <div class="dlgHead">
+      <b>Editor (catálogo + guías + presets)</b>
+      <button class="btn ghost" data-close="dlgEditor">Cerrar</button>
+    </div>
+    <div class="dlgBody">
+      <div class="editorGrid">
+        <div class="editorPanel">
+          <div class="editorTitle">Catálogo / Guías (editable)</div>
+          <p class="muted">
+            Edita opciones/módulos/artefactos/herramientas y guías sin tocar el motor.
+            <b>Aplicar</b> guarda en tu navegador. <b>Export/Import</b> mueve todo entre cel/lap.
+          </p>
+
+          <label>Sección</label>
+          <select id="editorSection"></select>
+
+          <label style="margin-top:10px">JSON editable</label>
+          <textarea id="editorJson" class="mono" style="min-height:360px"></textarea>
+
+          <div class="toolbar">
+            <button class="btn" id="btnEditorApply">Aplicar</button>
+            <button class="btn ghost" id="btnEditorReset">Default</button>
+          </div>
+
+          <div class="mini warn">⚠ Si el JSON está roto, no se aplica (te avisará).</div>
+        </div>
+
+        <div class="editorPanel">
+          <div class="editorTitle">Presets con nombre</div>
+          <label>Nombre</label>
+          <input id="presetName" placeholder="Ej: Abogados - García y Asociados" />
+          <div class="toolbar">
+            <button class="btn" id="btnPresetSaveNamed">Guardar</button>
+            <button class="btn ghost" id="btnPresetDeleteNamed">Borrar</button>
+          </div>
+
+          <label style="margin-top:10px">Lista</label>
+          <select id="presetList"></select>
+          <div class="toolbar">
+            <button class="btn" id="btnPresetLoadNamed">Cargar</button>
+            <button class="btn ghost" id="btnPresetRename">Renombrar</button>
+          </div>
+
+          <div class="mini">Presets se guardan local. Para moverlos usa Export/Import.</div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+  </dialog>
 
-<button class="bot" id="botBtn">Bot</button>
+  <input id="logoFile" type="file" accept="image/*" style="display:none" />
 
-<dialog id="dlgGuide">
-  <div class="modalhead">
-    <b>Guía de Integraciones (paso a paso)</b>
-    <button class="close" id="closeGuide">Cerrar</button>
-  </div>
-  <div class="modalbody">
-    <div class="two">
-      <div>
-        <p class="small muted"><b>Modo: cero suposiciones.</b> Te digo qué tocar, dónde tocarlo y cómo probar que funcionó.</p>
-        <ul class="small">
-          <li><b>Regla 1:</b> primero tu página/app funciona sin integraciones.</li>
-          <li><b>Regla 2:</b> activa <b>una</b> integración a la vez.</li>
-          <li><b>Regla 3:</b> si funciona, <b>commit</b>. Si falla, arreglas sin mezclar cambios.</li>
-        </ul>
-        <p class="small"><span class="good">✅</span> Si activas WhatsApp flotante: solo cambias el número.</p>
-        <p class="small"><span class="warn">⚠</span> Agenda: lo más rápido es Calendly (o Google Calendar appointment schedule).</p>
-      </div>
-      <div>
-        <p class="small"><b>1) WhatsApp flotante</b><br/>
-          Qué hace: botón que abre WhatsApp con mensaje prellenado.<br/>
-          Qué necesitas: tu número internacional y un mensaje.<br/>
-          Prueba: haz clic y verifica que abre el chat correcto.
-        </p>
-        <p class="small"><b>2) Formulario sin backend</b><br/>
-          Opción A (rápida): mailto (básico).<br/>
-          Opción B (pro): EmailJS (gratis con límite).<br/>
-          Prueba: envía y revisa que llegue correo.
-        </p>
-        <p class="small"><b>3) Agenda</b><br/>
-          Opción A (más fácil): Calendly embed (copy/paste).<br/>
-          Opción B: link a Google Calendar appointment schedule.<br/>
-          Prueba: reserva una cita de prueba.
-        </p>
-        <p class="small"><b>4) SEO + Legal</b><br/>
-          SEO: title/description/OG/schema.<br/>
-          Legal: privacidad/terms/aviso en footer.<br/>
-          Prueba: abrir “view source” y buscar meta tags.
-        </p>
-      </div>
-    </div>
-  </div>
-</dialog>
-
-<dialog id="dlgBot">
-  <div class="modalhead">
-    <b>Bot (explicación rápida)</b>
-    <button class="close" id="closeBot">Cerrar</button>
-  </div>
-  <div class="modalbody">
-    <p class="small">
-      <b>MASTER:</b> genera un solo bloque fusionado para pegar y ejecutar en tu IA.<br/>
-      <b>META:</b> genera META-BRIEF + META-PROMPT para fabricar el mejor MASTER PROMPT (y opcionalmente ejecutar).<br/>
-      <b>META²:</b> tú pegas 1 prompt y la IA decide si conviene MASTER o META (según complejidad), y te devuelve lo óptimo.
-    </p>
-    <p class="small muted">
-      Tip: si no existe tu opción en listas → elige <b>Z) Personalizado</b> y escribe. Eso ya lo incluimos en <b>todos</b> los rubros.
-    </p>
-  </div>
-</dialog>
-
-<input id="logoFile" type="file" accept="image/*" style="display:none" />
-
-<script>
-  // ---------- helpers ----------
-  function $(id){ return document.getElementById(id); }
-  function valSelect(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel) return "";
-    if(sel.value === "__custom__"){
-      return (custom?.value || "").trim() || "Personalizado (sin especificar)";
-    }
-    return sel.value;
-  }
-  function showCustom(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel || !custom) return;
-    custom.style.display = (sel.value === "__custom__") ? "block" : "none";
-  }
-  function wireCustom(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel || !custom) return;
-    sel.addEventListener("change", ()=> showCustom(selectId));
-    custom.addEventListener("input", ()=> {/* live */});
-    showCustom(selectId);
-  }
-  function esc(s){ return String(s||"").replaceAll("\u0000",""); }
-  function yesNo(b){ return b ? "Sí" : "No"; }
-
-  // ---------- mode ----------
-  let MODE = "MASTER"; // MASTER | META | META2
-  function setMode(m){
-    MODE = m;
-    $("btnMaster").classList.toggle("active", m==="MASTER");
-    $("btnMeta").classList.toggle("active", m==="META");
-    $("btnMeta2").classList.toggle("active", m==="META2");
-
-    const isMeta = (m==="META" || m==="META2");
-    $("metaObjWrap").style.display = isMeta ? "block" : "none";
-    $("metaRobWrap").style.display = isMeta ? "block" : "none";
-    $("metaFmtWrap").style.display = isMeta ? "block" : "none";
-    $("metaCompatWrap").style.display = isMeta ? "block" : "none";
-
-    $("segWrap").style.display = (m==="META") ? "flex" : "none";
-    $("outSub").textContent =
-      m==="MASTER"
-        ? "MASTER: BRIEF + PROMPT MAESTRO fusionado (1 bloque listo)."
-        : m==="META"
-          ? "META: META-BRIEF + META-PROMPT (separados por diseño)."
-          : "META²: meta-meta (decide estrategia MASTER vs META y fabrica lo óptimo).";
-  }
-
-  // ---------- gather ----------
-  function getData(){
-    const data = {
-      version: "v1.7",
-      factory: valSelect("factory"),
-      iaTarget: valSelect("iaTarget"),
-      nicho: valSelect("nicho"),
-      nivel: valSelect("nivel"),
-      objetivo: valSelect("objetivo"),
-      estilo: valSelect("estilo"),
-      colores: valSelect("colores"),
-      tono: valSelect("tono"),
-      producto: valSelect("producto"),
-      tipoWeb: valSelect("tipoWeb"),
-      marca: esc($("marca").value).trim() || "(sin marca)",
-      ciudad: esc($("ciudad").value).trim() || "(sin ciudad)",
-      wa: esc($("wa").value).trim() || "(sin WhatsApp)",
-      servicios: esc($("servicios").value).trim() || "(sin lista)",
-      notas: esc($("notas").value).trim() || "(sin notas)",
-      metaObjetivo: valSelect("metaObjetivo"),
-      robustez: valSelect("robustez"),
-      fmtMaster: valSelect("fmtMaster"),
-      compat: valSelect("compat"),
-      modules: {
-        wa: $("mWa").checked,
-        form: $("mForm").checked,
-        agenda: $("mAgenda").checked,
-        seo: $("mSeo").checked,
-        legal: $("mLegal").checked,
-        anim: $("mAnim").checked,
-        media: $("mMedia").checked,
-        explainBot: $("mExplainBot").checked,
-      }
-    };
-    return data;
-  }
-
-  // ---------- prompt builders ----------
-  function buildBrief(d){
-    const lines = [];
-    lines.push("=== METADATA (USO PERSONAL) ===");
-    lines.push(`Versión: ${d.version}`);
-    lines.push(`IA destino: ${d.iaTarget}`);
-    lines.push(`Factory: ${d.factory}`);
-    lines.push(`Producto: ${d.producto}`);
-    lines.push("");
-
-    lines.push("=== CONTEXTO DEL PROYECTO ===");
-    lines.push(`Marca: ${d.marca}`);
-    lines.push(`Ciudad: ${d.ciudad}`);
-    lines.push(`Nicho: ${d.nicho}`);
-    lines.push(`Nivel: ${d.nivel}`);
-    lines.push(`Objetivo principal: ${d.objetivo}`);
-    lines.push("");
-
-    lines.push("=== IDENTIDAD VISUAL ===");
-    lines.push(`Estilo visual: ${d.estilo}`);
-    lines.push(`Colores: ${d.colores}`);
-    lines.push(`Tono del contenido: ${d.tono}`);
-    lines.push("");
-
-    lines.push("=== CONTENIDO ===");
-    lines.push(`Servicios / features: ${d.servicios}`);
-    lines.push(`WhatsApp: ${d.wa}`);
-    lines.push("");
-
-    lines.push("=== FUNCIONALIDADES (MÓDULOS) ===");
-    lines.push(`WhatsApp flotante: ${yesNo(d.modules.wa)}`);
-    lines.push(`Formulario validado: ${yesNo(d.modules.form)}`);
-    lines.push(`Agenda/citas: ${yesNo(d.modules.agenda)}`);
-    lines.push(`SEO básico: ${yesNo(d.modules.seo)}`);
-    lines.push(`Legal/footer: ${yesNo(d.modules.legal)}`);
-    lines.push(`Animaciones: ${yesNo(d.modules.anim)}`);
-    lines.push(`Imágenes + música: ${yesNo(d.modules.media)}`);
-    lines.push(`Bot explicativo: ${yesNo(d.modules.explainBot)}`);
-    lines.push("");
-
-    lines.push("=== REQUERIMIENTOS EXTRA ===");
-    lines.push(d.notas);
-
-    if(d.producto.toLowerCase().includes("web") || d.producto.toLowerCase().includes("full") || d.producto.toLowerCase().includes("app")){
-      lines.push("");
-      lines.push("=== TIPO DE PROYECTO WEB (SI APLICA) ===");
-      lines.push(`Tipo de web: ${d.tipoWeb}`);
-    }
-
-    return lines.join("\n");
-  }
-
-  function buildMasterPrompt(d){
-    // Master prompt: instruction set to produce deliverable in selected factory
-    const base = [];
-    base.push("INSTRUCCIONES (MASTER PROMPT)");
-    base.push("- Responde en español.");
-    base.push("- Si faltan datos críticos, asume de forma razonable y lista tus supuestos al inicio.");
-    base.push("- Entrega resultados listos para usar, sin explicación innecesaria.");
-    base.push("- Incluye checklist final de verificación.");
-    base.push("");
-
-    if(String(d.factory).toUpperCase().includes("CODE")){
-      base.push("SALIDA ESPERADA (CODE)");
-      base.push("1) Un solo archivo index.html (HTML+CSS+JS) si es web simple, o estructura clara si es app/back.");
-      base.push("2) UI moderna y limpia, responsive.");
-      base.push("3) Módulos activados según el brief: WhatsApp flotante, formulario validado, agenda, SEO, legal, animaciones, media.");
-      base.push("4) Si hay integraciones externas (Calendly/EmailJS/etc.), deja placeholders y pasos de activación.");
-      base.push("");
-    } else if(String(d.factory).toUpperCase().includes("IMAGE")){
-      base.push("SALIDA ESPERADA (IMAGEN)");
-      base.push("1) Prompts listos para generar imágenes (4 variantes).");
-      base.push("2) Especifica estilo, composición, texto (si aplica), y negativos.");
-      base.push("");
-    } else if(String(d.factory).toUpperCase().includes("VIDEO")){
-      base.push("SALIDA ESPERADA (VIDEO)");
-      base.push("1) Guion (hook→valor→CTA), storyboard simple y assets sugeridos.");
-      base.push("2) Caption + hashtags + CTA en pantalla.");
-      base.push("");
-    } else {
-      base.push("SALIDA ESPERADA (WORKFLOW)");
-      base.push("1) Flujo paso a paso con herramientas recomendadas (gratis o bajo costo).");
-      base.push("2) Eventos, triggers, estructura de datos y pruebas.");
-      base.push("");
-    }
-
-    base.push("CALIDAD (OBLIGATORIO)");
-    base.push("- Evita 'relleno'. Si algo no se puede sin backend, ofrece alternativa sin backend + opción pro.");
-    base.push("- Usa nombres claros, comentarios en código si aplica.");
-    base.push("- Si el usuario pidió 'sin instalar', prioriza herramientas web.");
-    base.push("");
-
-    // notes
-    if(d.notas && d.notas !== "(sin notas)"){
-      base.push("NOTAS DEL SISTEMA (RESPETA)");
-      base.push(d.notas);
-      base.push("");
-    }
-
-    return base.join("\n");
-  }
-
-  function buildMasterFused(d){
-    const brief = buildBrief(d);
-    const mp = buildMasterPrompt(d);
-    return [
-      "=== BRIEF ESTRUCTURADO ===",
-      brief,
-      "",
-      "=== PROMPT MAESTRO (EJECUCIÓN) ===",
-      mp,
-      "",
-      "TAREA:",
-      "Con el brief anterior, genera la salida esperada completa."
-    ].join("\n");
-  }
-
-  function buildMetaBrief(d){
-    return [
-      "=== META-BRIEF (sistema) ===",
-      `Objetivo META: ${d.metaObjetivo}`,
-      `IA destino principal: ${d.iaTarget}`,
-      `Factory: ${String(d.factory).toUpperCase().replace("A) ","").replace("B) ","").replace("C) ","").replace("D) ","")}`,
-      `Formato del MASTER PROMPT requerido: ${d.fmtMaster}`,
-      `Compatibilidad: ${d.compat}`,
-      `Robustez: ${d.robustez}`,
-      "",
-      "=== PROJECT BRIEF (para el master prompt) ===",
-      buildBrief(d)
-    ].join("\n");
-  }
-
-  function buildMetaPrompt(d){
-    const lines = [];
-    lines.push("INSTRUCCIONES (META-PROMPT)");
-    lines.push("Tu rol: Arquitecto de prompts. Tu tarea es fabricar el MEJOR MASTER PROMPT posible para el proyecto.");
-    lines.push("Reglas:");
-    lines.push("- Devuelve primero el MASTER PROMPT final (en un bloque).");
-    lines.push("- Luego (si el objetivo lo pide) ejecuta el proyecto usando ese MASTER PROMPT + brief.");
-    lines.push("- No inventes herramientas caras; prioriza gratis o bajo costo y sin instalar.");
-    lines.push("- Incluye checklist QA y manejo de errores comunes.");
-    lines.push("");
-    lines.push("Salida obligatoria en este orden:");
-    lines.push("1) MASTER PROMPT (final, listo para pegar)");
-    lines.push("2) (Opcional) Ejecución del proyecto (si aplica)");
-    lines.push("");
-    lines.push("Ajustes:");
-    lines.push(`- Robustez: ${d.robustez}`);
-    lines.push(`- Formato: ${d.fmtMaster}`);
-    lines.push(`- Compatibilidad: ${d.compat}`);
-    lines.push("");
-    return lines.join("\n");
-  }
-
-  function buildMeta2Fused(d){
-    // META²: decides strategy and returns either MASTER fused or META pack.
-    const brief = buildBrief(d);
-    const sys = [];
-    sys.push("INSTRUCCIONES (META² / meta-meta)");
-    sys.push("Tu rol: Director de estrategia de prompts (nivel 2).");
-    sys.push("Objetivo: elegir la mejor estrategia (MASTER vs META) según complejidad y riesgo, y entregar lo óptimo.");
-    sys.push("");
-    sys.push("Reglas de decisión:");
-    sys.push("- Si el proyecto es simple o demo: usa MASTER (directo).");
-    sys.push("- Si el proyecto requiere varios módulos/integraciones/alta precisión: usa META (fabrica master prompt robusto).");
-    sys.push("- Si hay ambigüedad alta: primero hace 3 preguntas críticas, luego decide.");
-    sys.push("");
-    sys.push("Tu salida obligatoria:");
-    sys.push("A) Decisión: MASTER o META (explica 2 líneas por qué).");
-    sys.push("B) Entrega el prompt correspondiente listo para pegar:");
-    sys.push("   - Si MASTER: entrega BRIEF+MASTER fusionado.");
-    sys.push("   - Si META: entrega META-BRIEF + META-PROMPT (y el MASTER PROMPT resultante).");
-    sys.push("C) Checklist QA final.");
-    sys.push("");
-    sys.push("Restricciones:");
-    sys.push("- Todo en español.");
-    sys.push("- Prioriza gratis/bajo costo y sin instalar.");
-    sys.push("- Si hay código web: por defecto un solo index.html (salvo que el brief pida full-stack).");
-    sys.push("");
-    if(d.notas && d.notas !== "(sin notas)"){
-      sys.push("NOTAS DEL SISTEMA (RESPETA)");
-      sys.push(d.notas);
-      sys.push("");
-    }
-    return [
-      "=== META²-BRIEF ===",
-      `IA destino: ${d.iaTarget}`,
-      `Factory: ${d.factory}`,
-      `Nivel: ${d.nivel}`,
-      `Robustez sugerida: ${d.robustez}`,
-      "",
-      "=== BRIEF DEL PROYECTO ===",
-      brief,
-      "",
-      "=== META²-PROMPT ===",
-      sys.join("\n")
-    ].join("\n");
-  }
-
-  // ---------- output handling ----------
-  let OUT_TOP = "", OUT_BOTTOM = "", OUT_ALL = "";
-  function setOutput(top, bottom, all){
-    OUT_TOP = top || "";
-    OUT_BOTTOM = bottom || "";
-    OUT_ALL = all || "";
-    $("outPre").textContent = OUT_ALL || OUT_TOP || "—";
-  }
-  function copyText(txt){
-    navigator.clipboard.writeText(txt).then(()=>{
-      // no toast to keep clean
-    }).catch(()=>{});
-  }
-
-  // ---------- generate ----------
-  function generate(){
-    const d = getData();
-
-    if(MODE === "MASTER"){
-      const fused = buildMasterFused(d);
-      setOutput(fused, "", fused);
-      $("segWrap").style.display = "none";
-      $("outSub").textContent = "MASTER: BRIEF + PROMPT MAESTRO fusionado (1 bloque listo).";
-      return;
-    }
-
-    if(MODE === "META"){
-      const top = buildMetaBrief(d);
-      const bottom = buildMetaPrompt(d);
-      const all = [
-        "=== SALIDA META (pega en tu IA) ===",
-        "",
-        top,
-        "",
-        "=== META-PROMPT ===",
-        bottom
-      ].join("\n");
-      setOutput(top, bottom, all);
-      $("segWrap").style.display = "flex";
-      $("segA").classList.add("active");
-      $("segB").classList.remove("active");
-      $("outPre").textContent = top;
-      $("outSub").textContent = "META: META-BRIEF + META-PROMPT (separados por diseño).";
-      return;
-    }
-
-    // META²
-    const fused2 = buildMeta2Fused(d);
-    setOutput(fused2, "", fused2);
-    $("segWrap").style.display = "none";
-    $("outSub").textContent = "META²: meta-meta (decide estrategia MASTER vs META y fabrica lo óptimo).";
-  }
-
-  // ---------- presets (localStorage) ----------
-  const KEY = "acs_prompt_factory_preset_v17";
-  function savePreset(){
-    const d = getData();
-    localStorage.setItem(KEY, JSON.stringify(d));
-  }
-  function loadPreset(){
-    const raw = localStorage.getItem(KEY);
-    if(!raw) return;
-    const d = JSON.parse(raw);
-
-    // set selects + inputs
-    const map = {
-      factory:"factory", iaTarget:"iaTarget", nicho:"nicho", nivel:"nivel", objetivo:"objetivo",
-      estilo:"estilo", colores:"colores", tono:"tono", producto:"producto", tipoWeb:"tipoWeb",
-      metaObjetivo:"metaObjetivo", robustez:"robustez", fmtMaster:"fmtMaster", compat:"compat"
-    };
-    for(const k in map){
-      const id = map[k];
-      const sel = $(id);
-      if(!sel) continue;
-      // Try to match option; else set custom
-      const v = d[k] ?? "";
-      let found = false;
-      for(const opt of sel.options){
-        if(opt.value === v){ found=true; break; }
-      }
-      if(found){
-        sel.value = v;
-      } else {
-        sel.value = "__custom__";
-        const c = $(id+"_custom");
-        if(c) c.value = v;
-      }
-      showCustom(id);
-    }
-
-    $("marca").value = d.marca || "";
-    $("ciudad").value = d.ciudad || "";
-    $("wa").value = d.wa || "";
-    $("servicios").value = d.servicios || "";
-    $("notas").value = d.notas || "";
-
-    $("mWa").checked = !!d.modules?.wa;
-    $("mForm").checked = !!d.modules?.form;
-    $("mAgenda").checked = !!d.modules?.agenda;
-    $("mSeo").checked = !!d.modules?.seo;
-    $("mLegal").checked = !!d.modules?.legal;
-    $("mAnim").checked = !!d.modules?.anim;
-    $("mMedia").checked = !!d.modules?.media;
-    $("mExplainBot").checked = !!d.modules?.explainBot;
-  }
-  function resetAll(){
-    location.reload();
-  }
-
-  // ---------- wires ----------
-  function init(){
-    // custom wires for ALL selects
-    [
-      "factory","iaTarget","nicho","nivel","objetivo","estilo","colores","tono",
-      "producto","tipoWeb","metaObjetivo","robustez","fmtMaster","compat"
-    ].forEach(wireCustom);
-
-    // mode buttons
-    $("btnMaster").addEventListener("click", ()=> setMode("MASTER"));
-    $("btnMeta").addEventListener("click", ()=> setMode("META"));
-    $("btnMeta2").addEventListener("click", ()=> setMode("META2"));
-
-    // generate / actions
-    $("btnGen").addEventListener("click", generate);
-    $("btnReset").addEventListener("click", resetAll);
-    $("btnSave").addEventListener("click", ()=>{ savePreset(); });
-    $("btnLoad").addEventListener("click", ()=>{ loadPreset(); generate(); });
-
-    // copy buttons
-    $("copyAll").addEventListener("click", ()=> copyText(OUT_ALL || $("outPre").textContent));
-    $("copyTop").addEventListener("click", ()=>{
-      if(MODE==="META") copyText(OUT_TOP);
-      else copyText(OUT_ALL || $("outPre").textContent);
-    });
-    $("copyBottom").addEventListener("click", ()=>{
-      if(MODE==="META") copyText(OUT_BOTTOM);
-      else copyText(OUT_ALL || $("outPre").textContent);
-    });
-
-    // META segment view
-    $("segA").addEventListener("click", ()=>{
-      $("segA").classList.add("active"); $("segB").classList.remove("active");
-      $("outPre").textContent = OUT_TOP || "";
-    });
-    $("segB").addEventListener("click", ()=>{
-      $("segB").classList.add("active"); $("segA").classList.remove("active");
-      $("outPre").textContent = OUT_BOTTOM || "";
-    });
-
-    // guide
-    $("openGuide").addEventListener("click", ()=> $("dlgGuide").showModal());
-    $("closeGuide").addEventListener("click", ()=> $("dlgGuide").close());
-
-    // bot modal
-    $("botBtn").addEventListener("click", ()=> $("dlgBot").showModal());
-    $("closeBot").addEventListener("click", ()=> $("dlgBot").close());
-
-    // logo uploader
-    $("btnLogo").addEventListener("click", ()=> $("logoFile").click());
-    $("logoFile").addEventListener("change", (e)=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      const reader = new FileReader();
-      reader.onload = ()=>{
-        $("logoBox").style.backgroundImage = `url('${reader.result}')`;
-        $("logoBox").style.backgroundSize = "cover";
-        $("logoBox").style.backgroundPosition = "center";
-      };
-      reader.readAsDataURL(f);
-    });
-
-    // start in MASTER
-    setMode("MASTER");
-  }
-
-  init();
-</script>
+  <script src="./options.js"></script>
+  <script src="./guides.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
