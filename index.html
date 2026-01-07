@@ -1,311 +1,689 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>AI Code Sentinel — Prompt Factory (Rescue)</title>
-  <meta name="description" content="Generador de prompts (MASTER y META) en un solo archivo. Rescue build."/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Code Sentinel — Prompt Factory (Master)</title>
+  <meta name="description" content="Genera un BRIEF + MASTER PROMPT robusto con estética premium (ACS). Módulos opcionales por Notas extra (música, locutor, imágenes)." />
   <style>
     :root{
-      --bg:#0b1220; --panel:#0f1b33; --border:rgba(255,255,255,.12);
-      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
-      --accent:#57d3ff; --accent2:#6c8cff; --shadow:0 12px 28px rgba(0,0,0,.45);
-      --r:16px; --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      --bg:#0b1220;
+      --panel:#0f1b33;
+      --panel2:#0c1730;
+      --border:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.90);
+      --muted:rgba(255,255,255,.65);
+      --muted2:rgba(255,255,255,.45);
+      --accent:#57d3ff;
+      --accent2:#6c8cff;
+      --good:#37d67a;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --shadow:0 10px 30px rgba(0,0,0,.45);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:var(--sans); color:var(--text);
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
       background:
         radial-gradient(1200px 600px at 10% 0%, rgba(87,211,255,.14), transparent 60%),
         radial-gradient(1000px 500px at 100% 10%, rgba(108,140,255,.12), transparent 55%),
+        radial-gradient(900px 700px at 60% 100%, rgba(55,214,122,.10), transparent 60%),
         var(--bg);
-      padding:18px;
+      min-height:100vh;
+      padding:22px;
     }
     .wrap{max-width:1200px;margin:0 auto}
-    .top{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;
-      padding:14px 16px;border:1px solid var(--border);border-radius:var(--r);
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 16px; border:1px solid var(--border);
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow:var(--shadow);
+      border-radius:var(--radius); box-shadow:var(--shadow);
     }
-    .brand{display:flex;align-items:center;gap:12px}
+    .brand{display:flex; align-items:center; gap:12px}
     .logo{
       width:40px;height:40px;border-radius:12px;
       background:radial-gradient(circle at 30% 30%, #7ef3ff, #2b77ff 65%, #152049);
-      border:1px solid rgba(255,255,255,.18);
       box-shadow:0 10px 24px rgba(87,211,255,.18);
+      border:1px solid rgba(255,255,255,.18);
+      flex:0 0 auto;
+      background-size:cover;
+      background-position:center;
     }
-    h1{margin:0;font-size:14px;letter-spacing:.12em;text-transform:uppercase}
-    .sub{margin:3px 0 0 0;color:var(--muted);font-size:12px}
-    .pill{padding:7px 10px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.04);font-size:12px;color:var(--muted)}
-    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px}
-    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+    .btitles h1{font-size:14px;letter-spacing:.14em;margin:0;text-transform:uppercase}
+    .btitles p{margin:2px 0 0 0;font-size:12px;color:var(--muted)}
+    .status{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border:1px solid var(--border);
+      border-radius:999px; background:rgba(255,255,255,.04);
+      font-size:12px; color:var(--muted);
+    }
+    .dot{width:10px;height:10px;border-radius:50%; background:var(--good); box-shadow:0 0 0 4px rgba(55,214,122,.12)}
+    .ver{font-family:var(--mono); font-size:12px; color:rgba(255,255,255,.75)}
+    .grid{display:grid; grid-template-columns: 1.05fr .95fr; gap:14px; margin-top:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
     .card{
-      border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
+      border:1px solid var(--border);
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .cardhead{
+      padding:14px 16px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .cardhead .title{font-size:14px; font-weight:800}
+    .cardhead .sub{font-size:12px;color:var(--muted); margin-top:2px}
+    .headleft{display:flex; flex-direction:column}
+    .content{padding:14px 16px}
+    .hint{
+      padding:10px 12px; border:1px dashed rgba(255,255,255,.16);
+      border-radius:12px; color:var(--muted); font-size:12px;
+      background:rgba(0,0,0,.10);
+      margin-bottom:12px;
+    }
+    .formgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 780px){ .formgrid{grid-template-columns:1fr} }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    select,input,textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(10,18,34,.55);
+      color:rgba(255,255,255,.92);
+      outline:none;
+    }
+    textarea{min-height:92px; resize:vertical}
+    .field{display:flex; flex-direction:column}
+    .row2{grid-column:1 / -1}
+    .mini{font-size:11px; color:var(--muted2); margin-top:6px}
+    .toggles{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .check{
+      display:flex; align-items:flex-start; gap:10px;
+      padding:10px 10px; border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03); border-radius:12px;
+      flex:1 1 220px;
+    }
+    .check input{width:auto; margin-top:2px}
+    .check b{display:block; font-size:12px}
+    .check span{display:block; font-size:11px; color:var(--muted)}
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:12px
+    }
+    .action{
+      border:1px solid rgba(87,211,255,.35);
+      background:rgba(87,211,255,.12);
+      color:#eaffff;
+      padding:10px 12px; border-radius:12px;
+      font-weight:900; font-size:12px; cursor:pointer;
+    }
+    .action.secondary{
+      border-color:rgba(255,255,255,.16);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.86);
+      font-weight:800;
+    }
+    .outhead{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      padding:14px 16px; border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    }
+    .outhead .t{font-weight:900}
+    .outhead .s{font-size:12px;color:var(--muted)}
+    .outactions{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.03);
+      color:rgba(255,255,255,.86);
+      font-size:12px; cursor:pointer;
+    }
+    .chip.primary{
+      border-color:rgba(87,211,255,.35);
+      background:rgba(87,211,255,.10);
+    }
+    .output{padding:14px 16px}
+    pre{
+      margin:0;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.20);
+      overflow:auto;
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.45;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .bot{
+      position:fixed;
+      right:18px; bottom:18px;
+      padding:10px 12px; border-radius:999px;
+      border:1px solid rgba(87,211,255,.35);
+      background:rgba(87,211,255,.12);
+      color:#eaffff;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      user-select:none;
+    }
+    dialog{
+      width:min(900px, 94vw);
+      border:none;
+      border-radius:18px;
+      padding:0;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.16);
       box-shadow:var(--shadow);
     }
-    .head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-    .head b{font-size:14px}
-    .content{padding:14px 16px}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select,textarea{
-      width:100%;padding:10px 10px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);background:rgba(10,18,34,.55);
-      color:rgba(255,255,255,.92);outline:none;
+    dialog::backdrop{background:rgba(0,0,0,.6)}
+    .modalhead{
+      padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:space-between;
     }
-    textarea{min-height:84px;resize:vertical}
-    .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media(max-width:780px){.form{grid-template-columns:1fr}}
-    .row2{grid-column:1/-1}
-    .modes{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--border);background:rgba(255,255,255,.04);color:rgba(255,255,255,.88);
-      padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;
-    }
-    .btn.active{border-color:rgba(87,211,255,.55);background:rgba(87,211,255,.12)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .action{
-      border:1px solid rgba(87,211,255,.35);background:rgba(87,211,255,.12);
-      color:#eaffff;padding:10px 12px;border-radius:12px;font-weight:900;font-size:12px;cursor:pointer;
-    }
-    .action.secondary{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.04);font-weight:800;color:rgba(255,255,255,.86)}
-    pre{
-      margin:0;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.20);overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;
-    }
-    .hint{font-size:12px;color:var(--muted);margin-top:10px}
+    .modalhead b{font-size:14px}
+    .modalbody{padding:14px 16px}
+    .close{cursor:pointer; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04)}
+    .small{font-size:12px}
+    .muted{color:var(--muted)}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <h1>AI CODE SENTINEL — PROMPT FACTORY</h1>
-          <div class="sub">RESCUE BUILD: un solo archivo, botón Generar garantizado ✅</div>
-        </div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" id="logoBox" title="Logo (opcional)"></div>
+      <div class="btitles">
+        <h1>AI CODE SENTINEL — PROMPT FACTORY</h1>
+        <p>Master único: BRIEF + MASTER PROMPT robusto · Módulos por Notas extra · 100% 1 archivo</p>
       </div>
-      <div class="pill" id="ver">v-rescue</div>
     </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="head">
-          <div>
-            <b>Entrada</b>
-            <div class="sub">Llena lo mínimo y genera MASTER o META.</div>
-          </div>
-          <div class="modes">
-            <button class="btn active" id="mMaster">MASTER</button>
-            <button class="btn" id="mMeta">META</button>
-          </div>
-        </div>
-
-        <div class="content">
-          <div class="form">
-            <div>
-              <label>Factory</label>
-              <select id="factory">
-                <option value="CODE">Código (web/apps/backend)</option>
-                <option value="IMAGE">Imágenes</option>
-                <option value="VIDEO">Video</option>
-                <option value="WORKFLOW">Workflows</option>
-              </select>
-            </div>
-            <div>
-              <label>IA destino</label>
-              <select id="ia">
-                <option value="agnostico">Cualquier IA (agnóstico)</option>
-                <option value="chatgpt">ChatGPT</option>
-                <option value="claude">Claude</option>
-                <option value="gemini">Gemini</option>
-                <option value="copilot">Copilot</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Marca</label>
-              <input id="marca" value="García y Asociados"/>
-            </div>
-            <div>
-              <label>Ciudad</label>
-              <input id="ciudad" value="Ciudad Juárez"/>
-            </div>
-
-            <div class="row2">
-              <label>Objetivo</label>
-              <input id="objetivo" value="Crear una landing para buffet de abogados que capte leads por WhatsApp"/>
-            </div>
-
-            <div>
-              <label>WhatsApp (sin +)</label>
-              <input id="wa" value="526568239431"/>
-            </div>
-            <div>
-              <label>Email</label>
-              <input id="email" value="eduardorodarteq@gmail.com"/>
-            </div>
-
-            <div class="row2">
-              <label>Servicios (coma)</label>
-              <input id="servicios" value="Civil, Mercantil, Laboral"/>
-            </div>
-
-            <div class="row2">
-              <label>Notas extra (para “música/locutor”, etc.)</label>
-              <textarea id="notas" placeholder="Ej: incluir audio opcional y texto de locutor de bienvenida..."></textarea>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="action" id="gen">Generar</button>
-            <button class="action secondary" id="copy">Copiar</button>
-            <button class="action secondary" id="test">Test rápido</button>
-          </div>
-
-          <div class="hint" id="hint"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="head">
-          <div>
-            <b>Salida</b>
-            <div class="sub" id="outSub">MASTER: 1 bloque listo para pegar.</div>
-          </div>
-        </div>
-        <div class="content">
-          <pre id="out">Haz clic en “Generar”.</pre>
-        </div>
-      </div>
+    <div class="status">
+      <span class="pill"><span class="dot"></span> Estable</span>
+      <span class="pill"><span class="ver" id="verTxt">MASTER v2.0</span></span>
     </div>
   </div>
 
-<script>
-(() => {
-  const $ = (id)=>document.getElementById(id);
-  let MODE = "MASTER";
-  const out = $("out");
-  const hint = $("hint");
+  <div class="grid">
+    <div class="card">
+      <div class="cardhead">
+        <div class="headleft">
+          <div class="title">Brief</div>
+          <div class="sub">Llena lo básico. Lo “especial” (música/imágenes/locutor) va en <b>Notas extra</b>.</div>
+        </div>
+      </div>
 
-  function setMode(m){
-    MODE = m;
-    $("mMaster").classList.toggle("active", m==="MASTER");
-    $("mMeta").classList.toggle("active", m==="META");
-    $("outSub").textContent = m==="MASTER"
-      ? "MASTER: 1 bloque listo para pegar."
-      : "META: meta-brief + meta-prompt (para fabricar master prompt).";
+      <div class="content">
+        <div class="hint">
+          Flujo: <b>Generar → Copiar → Pegar en tu IA</b> (ChatGPT/Claude/Gemini/Copilot).<br>
+          Si quieres música o imágenes automáticas, escríbelo en <b>Notas extra</b>.
+        </div>
+
+        <div class="formgrid">
+          <div class="field">
+            <label>Factory</label>
+            <select id="factory">
+              <option value="CODE">Código (web/apps)</option>
+              <option value="IMAGE">Imágenes (prompts)</option>
+              <option value="VIDEO">Video (guion/story)</option>
+              <option value="WORKFLOW">Workflows (n8n/Make/Zapier)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>IA / plataforma destino</label>
+            <select id="iaTarget">
+              <option value="agnostico">Cualquier IA (agnóstico)</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude</option>
+              <option value="gemini">Gemini</option>
+              <option value="copilot">Copilot (code)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Nicho / negocio</label>
+            <select id="nicho">
+              <option value="Legal / Abogados">Legal / Abogados</option>
+              <option value="Restaurante / Café">Restaurante / Café</option>
+              <option value="Salud / Clínica">Salud / Clínica</option>
+              <option value="Gimnasio / Fitness">Gimnasio / Fitness</option>
+              <option value="Tech / SaaS">Tech / SaaS</option>
+              <option value="Servicios locales">Servicios locales</option>
+              <option value="Educación / Cursos">Educación / Cursos</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Nivel</label>
+            <select id="nivel">
+              <option value="Agencia (entregable completo)">Agencia (entregable completo)</option>
+              <option value="Pro (cliente real)">Pro (cliente real)</option>
+              <option value="MVP (funcional)">MVP (funcional)</option>
+              <option value="Demo (rápido)">Demo (rápido)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Objetivo principal</label>
+            <select id="objetivo">
+              <option value="Captar leads">Captar leads</option>
+              <option value="Vender / cobrar">Vender / cobrar</option>
+              <option value="Reservas / citas">Reservas / citas</option>
+              <option value="Informar / autoridad">Informar / autoridad</option>
+              <option value="Portafolio / marca">Portafolio / marca</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Estilo visual base</label>
+            <select id="estilo">
+              <option value="Premium sobrio (ACS)">Premium sobrio (ACS)</option>
+              <option value="Moderno tech">Moderno tech</option>
+              <option value="Minimal limpio">Minimal limpio</option>
+              <option value="Elegante oscuro">Elegante oscuro</option>
+              <option value="Creativo bold">Creativo bold</option>
+            </select>
+          </div>
+
+          <div class="field row2">
+            <label>Nombre de marca</label>
+            <input id="marca" placeholder="Ej: García y Asociados" value="García y Asociados" />
+          </div>
+
+          <div class="field">
+            <label>Ciudad</label>
+            <input id="ciudad" placeholder="Ej: Ciudad Juárez" value="Ciudad Juárez" />
+          </div>
+
+          <div class="field">
+            <label>WhatsApp (sin +, sin espacios)</label>
+            <input id="wa" placeholder="Ej: 526568239431" value="526568239431" />
+            <div class="mini">MX típico: 52 + número. (Si tu WhatsApp abre raro, lo ajustamos.)</div>
+          </div>
+
+          <div class="field">
+            <label>Email</label>
+            <input id="email" placeholder="Ej: eduardorodarteq@gmail.com" value="eduardorodarteq@gmail.com" />
+          </div>
+
+          <div class="field row2">
+            <label>Servicios / features (separados por coma)</label>
+            <input id="servicios" placeholder="Ej: Civil, Mercantil, Laboral" value="Civil, Mercantil, Laboral" />
+          </div>
+
+          <div class="field row2">
+            <label>Notas extra (aquí activas música / locutor / imágenes por URL o assets)</label>
+            <textarea id="notas" placeholder="Ej: Incluir música ambiental instrumental (mi autoría) con toggle; usar imágenes por URL (Pexels/Unsplash); bienvenida tipo locutor; animaciones finas; etc."></textarea>
+            <div class="mini">
+              Palabras clave útiles: <b>música</b>, <b>audio</b>, <b>instrumental</b>, <b>locutor</b>, <b>narración</b>, <b>imágenes por URL</b>, <b>assets</b>.
+            </div>
+          </div>
+
+          <div class="field row2">
+            <label>Módulos base (recomendado)</label>
+            <div class="toggles">
+              <div class="check">
+                <input type="checkbox" id="mWa" checked />
+                <div><b>WhatsApp flotante</b><span>Botón flotante + CTA a WhatsApp.</span></div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="mForm" checked />
+                <div><b>Formulario (sin backend)</b><span>Valida y arma mensaje para WhatsApp.</span></div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="mSeo" checked />
+                <div><b>SEO básico</b><span>Meta tags + Open Graph + schema si aplica.</span></div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="mLegal" checked />
+                <div><b>Legal/footer</b><span>Privacidad · Términos · Aviso legal (plantilla).</span></div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="mAnim" checked />
+                <div><b>Animaciones sutiles</b><span>Scroll reveal + hover (sin exagerar).</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="action" id="btnGen">Generar</button>
+          <button class="action secondary" id="btnCopy">Copiar todo</button>
+          <button class="action secondary" id="btnLogo">Poner logo</button>
+          <button class="action secondary" id="btnHelp">Guía rápida</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="outhead">
+        <div>
+          <div class="t">Salida</div>
+          <div class="s">BRIEF + MASTER PROMPT (con estilo ACS fijo + módulos condicionales por Notas extra).</div>
+        </div>
+        <div class="outactions">
+          <button class="chip primary" id="copyAll">Copiar</button>
+        </div>
+      </div>
+      <div class="output">
+        <pre id="outPre">Haz clic en “Generar”.</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="bot" id="botBtn">Bot</button>
+
+<dialog id="dlgHelp">
+  <div class="modalhead">
+    <b>Guía rápida</b>
+    <button class="close" id="closeHelp">Cerrar</button>
+  </div>
+  <div class="modalbody">
+    <p class="small">
+      1) Llena marca/ciudad/WhatsApp/servicios.<br>
+      2) Si quieres cosas especiales, escríbelas en <b>Notas extra</b> (ej: “música instrumental”, “imágenes por URL”, “locutor”).<br>
+      3) Da clic en <b>Generar</b> → copia y pega en tu IA.<br><br>
+      Nota: la música y las imágenes “automáticas” se activan solo si lo pides en Notas extra.
+    </p>
+  </div>
+</dialog>
+
+<dialog id="dlgBot">
+  <div class="modalhead">
+    <b>Bot (explicación)</b>
+    <button class="close" id="closeBot">Cerrar</button>
+  </div>
+  <div class="modalbody">
+    <p class="small">
+      Esta app no genera el código final: genera el <b>prompt correcto</b> para que tu IA lo genere mejor.
+      Tu “firma” (ACS) está en el sistema estético fijo + buenas restricciones.
+    </p>
+  </div>
+</dialog>
+
+<input id="logoFile" type="file" accept="image/*" style="display:none" />
+
+<script>
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s||"").replaceAll("\u0000",""); }
+  function yn(b){ return b ? "Sí" : "No"; }
+
+  function normalizeNotes(n){
+    return (n||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
 
-  function data(){
+  function detectFlags(notesRaw){
+    const n = normalizeNotes(notesRaw);
+
+    const wantsMusic = /\b(musica|audio|instrumental|ambient)\b/.test(n);
+    const wantsLocutor = /\b(locutor|narracion|narrador|voz|bienvenida tipo locutor)\b/.test(n);
+
+    // imágenes: url vs assets
+    const wantsImgURL = /\b(imagenes? por url|stock|unsplash|pexels|pixabay)\b/.test(n);
+    const wantsImgAssets = /\b(assets|locales|carpeta assets|imagenes locales)\b/.test(n);
+
+    // si pidió ambos, preferimos assets (más estable)
+    const imgMode = wantsImgAssets ? "ASSETS" : (wantsImgURL ? "URL" : "PLACEHOLDER");
+
+    return { wantsMusic, wantsLocutor, imgMode };
+  }
+
+  function getData(){
     return {
+      version: "MASTER v2.0",
       factory: $("factory").value,
-      ia: $("ia").value,
-      marca: $("marca").value.trim() || "(sin marca)",
-      ciudad: $("ciudad").value.trim() || "(sin ciudad)",
-      objetivo: $("objetivo").value.trim() || "(sin objetivo)",
-      wa: $("wa").value.trim() || "(sin whatsapp)",
-      email: $("email").value.trim() || "(sin email)",
-      servicios: $("servicios").value.trim() || "(sin servicios)",
-      notas: $("notas").value.trim() || "(sin notas)"
+      iaTarget: $("iaTarget").value,
+      nicho: $("nicho").value,
+      nivel: $("nivel").value,
+      objetivo: $("objetivo").value,
+      estilo: $("estilo").value,
+      marca: esc($("marca").value).trim() || "(sin marca)",
+      ciudad: esc($("ciudad").value).trim() || "(sin ciudad)",
+      wa: esc($("wa").value).trim() || "(sin WhatsApp)",
+      email: esc($("email").value).trim() || "(sin email)",
+      servicios: esc($("servicios").value).trim() || "(sin lista)",
+      notas: esc($("notas").value).trim() || "(sin notas)",
+      modules: {
+        wa: $("mWa").checked,
+        form: $("mForm").checked,
+        seo: $("mSeo").checked,
+        legal: $("mLegal").checked,
+        anim: $("mAnim").checked,
+      }
     };
   }
 
-  function buildMaster(d){
-    return [
-`=== BRIEF ===
-Marca: ${d.marca}
-Ciudad: ${d.ciudad}
-Objetivo: ${d.objetivo}
-Servicios: ${d.servicios}
-WhatsApp: ${d.wa}
-Email: ${d.email}
-Notas: ${d.notas}
+  function buildBrief(d){
+    const flags = detectFlags(d.notas);
 
-=== PROMPT MAESTRO ===
-Rol: Eres un diseñador + copywriter + front-end senior.
-Reglas:
-- Responde en español.
-- Sin backend, sin frameworks, un solo index.html (HTML+CSS+JS).
-- Estética premium (oscuro elegante, acentos sutiles).
-- Incluye: botón WhatsApp funcional (con mensaje prellenado), formulario (front-end), animaciones sutiles (scroll reveal), navegación suave.
-- Añade SEO básico (title/description/OG) y footer legal simple.
-- Entrega: SOLO el código completo del index.html y nada más.
+    const lines = [];
+    lines.push("=== BRIEF ESTRUCTURADO ===");
+    lines.push(`Versión: ${d.version}`);
+    lines.push(`IA destino: ${d.iaTarget}`);
+    lines.push(`Factory: ${d.factory}`);
+    lines.push("");
+    lines.push("=== CONTEXTO ===");
+    lines.push(`Marca: ${d.marca}`);
+    lines.push(`Ciudad: ${d.ciudad}`);
+    lines.push(`Nicho: ${d.nicho}`);
+    lines.push(`Nivel: ${d.nivel}`);
+    lines.push(`Objetivo: ${d.objetivo}`);
+    lines.push("");
+    lines.push("=== CONTACTO ===");
+    lines.push(`WhatsApp: ${d.wa}`);
+    lines.push(`Email: ${d.email}`);
+    lines.push("");
+    lines.push("=== OFERTA / SERVICIOS ===");
+    lines.push(d.servicios);
+    lines.push("");
+    lines.push("=== MÓDULOS BASE ===");
+    lines.push(`WhatsApp flotante: ${yn(d.modules.wa)}`);
+    lines.push(`Formulario sin backend (valida y arma mensaje): ${yn(d.modules.form)}`);
+    lines.push(`SEO básico (meta/OG/schema): ${yn(d.modules.seo)}`);
+    lines.push(`Legal/footer (Privacidad/Términos/Aviso): ${yn(d.modules.legal)}`);
+    lines.push(`Animaciones sutiles (scroll reveal + hover): ${yn(d.modules.anim)}`);
+    lines.push("");
+    lines.push("=== NOTAS EXTRA (del usuario) ===");
+    lines.push(d.notas);
+    lines.push("");
+    lines.push("=== DETECCIÓN AUTOMÁTICA (sistema) ===");
+    lines.push(`Imágenes: ${flags.imgMode === "URL" ? "por URL (stock free)" : flags.imgMode === "ASSETS" ? "assets locales (/assets/img)" : "placeholders (sin forzar)"}`);
+    lines.push(`Música: ${flags.wantsMusic ? "Sí (autoría propia / CC0)" : "No (solo si lo piden)"}`);
+    lines.push(`Locutor/narración: ${flags.wantsLocutor ? "Sí" : "No"}`);
 
-Tarea:
-Con el BRIEF, genera el index.html completo listo para GitHub Pages.`
-    ].join("");
+    return lines.join("\n");
   }
 
-  function buildMeta(d){
-    const metaBrief =
-`=== META-BRIEF ===
-Objetivo: fabricar el mejor MASTER PROMPT para este proyecto y luego ejecutarlo.
-Destino: ${d.ia}
-Factory: ${d.factory}
-Restricciones: sin backend, sin frameworks, un solo index.html
-Calidad: estética premium + cero huecos
+  function buildHouseStyle(d){
+    return [
+`=== SISTEMA ESTÉTICO (ACS HOUSE STYLE) — OBLIGATORIO ===
+Objetivo: que el resultado se vea premium, moderno y funcional (no “plantilla genérica”).
 
-=== PROJECT BRIEF ===
-Marca: ${d.marca}
-Ciudad: ${d.ciudad}
-Objetivo: ${d.objetivo}
-Servicios: ${d.servicios}
-WhatsApp: ${d.wa}
-Email: ${d.email}
-Notas: ${d.notas}`;
+1) Color (sobrio y controlado)
+- Usa 1 color acento + neutrales. Fondo oscuro elegante.
+- Acento por industria (AUTO):
+  - Legal/abogados: dorado sobrio (#D4AF37)
+  - Salud/clínica: teal/verde limpio (#2DD4BF o #22C55E)
+  - Restaurante/café: ámbar/cobre (#F59E0B)
+  - Tech/SaaS: cyan/azul eléctrico (#38BDF8)
+- El acento solo en: botones, links, highlights, líneas finas. No saturar.
 
-    const metaPrompt =
-`=== META-PROMPT ===
-Tu rol: Arquitecto de prompts.
-1) Devuelve un MASTER PROMPT final (listo para pegar) que fuerce: estética premium, módulos completos, y cero huecos.
-2) Luego ejecuta el proyecto: entrega SOLO el index.html completo.
-Reglas:
-- Español
-- Sin backend / sin frameworks
-- WhatsApp con link real + mensaje prellenado
-- Form con validación front-end
-- Scroll reveal sin librerías
-- Smooth scroll
-- SEO básico + footer legal
-Salida en este orden:
-A) MASTER PROMPT
-B) index.html completo`;
+2) Tipografía (premium)
+- Usa Inter o DM Sans (Google Fonts).
+- Jerarquía clara: H1 fuerte, subtítulos limpios, cuerpo legible.
 
-    return `${metaBrief}\n\n${metaPrompt}`;
+3) Espaciado (lujo = aire)
+- Secciones con padding generoso (70–100px desktop).
+- Layout con max-width (1100–1200px) y buen ritmo vertical.
+
+4) Componentes visuales
+- Hero impactante (mensaje claro + CTA).
+- Cards con borde sutil y sombras ligeras.
+- Botones con hover fino.
+
+5) Animación (sutil y elegante)
+- Scroll reveal: fade + translateY pequeño, 500–700ms.
+- Hover suave en botones y cards. Sin efectos exagerados.
+
+Regla: prioriza claridad y conversión. Lo estético debe apoyar al objetivo.
+
+Variación: evita repetir la misma estructura exacta en todos los proyectos;
+varía composición del hero, orden de secciones y estilo de cards según el nicho,
+manteniendo este sistema ACS.`,
+    ].join("\n");
+  }
+
+  function buildConditionalModules(d){
+    const flags = detectFlags(d.notas);
+
+    const lines = [];
+    lines.push("=== MÓDULOS CONDICIONALES (solo si aplica por Notas extra) ===");
+
+    // IMAGES
+    if(flags.imgMode === "URL"){
+      lines.push("- Imágenes: usar URLs de stock free (Unsplash/Pexels/Pixabay) coherentes con el nicho. Evitar marcas/logos.");
+    } else if(flags.imgMode === "ASSETS"){
+      lines.push("- Imágenes: usar assets locales en /assets/img/ (ej: hero.jpg, service-1.jpg, service-2.jpg). Dejar placeholders y mencionar qué archivos subir.");
+    } else {
+      lines.push("- Imágenes: si el usuario no pidió, usa placeholders sobrios (gradientes/figuras) o deja hooks para integrar después.");
+    }
+
+    // MUSIC
+    if(flags.wantsMusic){
+      lines.push("- Música: incluir toggle “Ambiente” (ON/OFF), SIN autoplay, volumen inicial 20–30%, loop suave.");
+      lines.push("  Usar archivo local recomendado: /assets/audio/ambient.mp3 (música de autoría propia).");
+      lines.push("  Incluir nota breve en el código: 'Audio de autoría propia del cliente'.");
+    } else {
+      lines.push("- Música: NO incluir música salvo que el usuario la pida explícitamente.");
+    }
+
+    // LOCUTOR
+    if(flags.wantsLocutor){
+      lines.push("- Locutor/narración: incluir una sección 'Bienvenida tipo locutor' (copy breve con ritmo de voz).");
+      lines.push("  Si se menciona voz: solo texto (no TTS real), pensado para narrarse.");
+    } else {
+      lines.push("- Locutor/narración: opcional solo si se pide.");
+    }
+
+    // LEGAL NOTE
+    lines.push("- Nota legal corta: si se usan imágenes externas, indicar que son stock free/placeholder y deben reemplazarse para producción.");
+    return lines.join("\n");
+  }
+
+  function buildMasterPrompt(d){
+    const house = buildHouseStyle(d);
+    const cond = buildConditionalModules(d);
+
+    if(d.factory !== "CODE"){
+      // Para otras factories seguimos usando la base, pero orientada a prompts.
+      return [
+`=== MASTER PROMPT (EJECUCIÓN) ===
+Responde en español. Cero relleno.
+
+Usa el BRIEF para generar entregables de alta calidad.
+
+${house}
+
+${cond}
+
+SALIDA ESPERADA según Factory:
+- IMAGE: 4 prompts + negativos + variaciones por estilo, listos para copiar.
+- VIDEO: guion (hook→valor→CTA) + storyboard simple + caption + hashtags.
+- WORKFLOW: flujo paso a paso con herramientas web (gratis/bajo costo) + pruebas.
+
+TAREA:
+Con el BRIEF, entrega la salida esperada completa (lista para usar).`
+      ].join("\n");
+    }
+
+    // CODE factory
+    return [
+`=== MASTER PROMPT (EJECUCIÓN) ===
+Rol: Diseñador UI/UX + copywriter + front-end senior.
+
+Reglas obligatorias:
+- Responde en español.
+- Entrega SOLO el código final (sin explicación).
+- Un solo archivo: index.html con HTML+CSS+JS embebidos.
+- Sin backend, sin frameworks, sin dependencias externas obligatorias.
+- Responsive móvil primero (mobile-first).
+- Prioriza claridad + conversión.
+
+${house}
+
+Integraciones base (según brief):
+- WhatsApp flotante funcional (wa.me) con mensaje prellenado.
+- Formulario validado SIN backend: al enviar arma un mensaje y abre WhatsApp con los datos.
+- Navegación suave (smooth scroll) a secciones.
+- Animaciones sutiles de scroll reveal (IntersectionObserver) si está habilitado.
+- SEO básico: title/description/OG + schema simple si aplica.
+- Footer legal: Privacidad / Términos / Aviso legal (plantilla).
+
+${cond}
+
+Restricciones importantes:
+- Nada de autoplay (si hay música, solo con toggle).
+- Evita saturar de efectos.
+- Mantén estética premium sobria (ACS).
+
+TAREA:
+Con el BRIEF anterior, genera el index.html completo listo para GitHub Pages.
+Entrega SOLO el contenido de index.html.`
+    ].join("\n");
+  }
+
+  function buildFused(d){
+    const brief = buildBrief(d);
+    const mp = buildMasterPrompt(d);
+    return `${brief}\n\n${mp}`;
   }
 
   function generate(){
-    const d = data();
-    const txt = MODE==="MASTER" ? buildMaster(d) : buildMeta(d);
-    out.textContent = txt;
-    hint.textContent = "✅ Generado. Ahora pégalo en tu IA y pide la salida (index.html).";
+    const d = getData();
+    const out = buildFused(d);
+    $("outPre").textContent = out;
   }
 
-  function copy(){
-    navigator.clipboard.writeText(out.textContent).then(()=>{
-      hint.textContent = "📋 Copiado al portapapeles.";
-    }).catch(()=>{
-      hint.textContent = "No se pudo copiar. Selecciona el texto y copia manual.";
-    });
+  function copyText(txt){
+    navigator.clipboard.writeText(txt).catch(()=>{});
   }
 
-  function test(){
-    // prueba visible para ti: si esto cambia, el JS sí está vivo
-    hint.textContent = "✅ TEST OK: el JavaScript está funcionando en esta página.";
-  }
+  // UI wiring
+  $("btnGen").addEventListener("click", generate);
+  $("btnCopy").addEventListener("click", ()=> copyText($("outPre").textContent));
+  $("copyAll").addEventListener("click", ()=> copyText($("outPre").textContent));
 
-  $("mMaster").addEventListener("click", ()=>setMode("MASTER"));
-  $("mMeta").addEventListener("click", ()=>setMode("META"));
-  $("gen").addEventListener("click", generate);
-  $("copy").addEventListener("click", copy);
-  $("test").addEventListener("click", test);
+  $("btnHelp").addEventListener("click", ()=> $("dlgHelp").showModal());
+  $("closeHelp").addEventListener("click", ()=> $("dlgHelp").close());
 
-  setMode("MASTER");
-})();
+  $("botBtn").addEventListener("click", ()=> $("dlgBot").showModal());
+  $("closeBot").addEventListener("click", ()=> $("dlgBot").close());
+
+  // Logo uploader (local preview only)
+  $("btnLogo").addEventListener("click", ()=> $("logoFile").click());
+  $("logoFile").addEventListener("change", (e)=>{
+    const f = e.target.files?.[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      $("logoBox").style.backgroundImage = `url('${reader.result}')`;
+      $("logoBox").style.backgroundSize = "cover";
+      $("logoBox").style.backgroundPosition = "center";
+    };
+    reader.readAsDataURL(f);
+  });
 </script>
 </body>
 </html>
